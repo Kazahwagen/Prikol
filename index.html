@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0d1230">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Предел — idle-игра про математику</title>
+<style>
+:root{--h:38;--bg:#0d1230;--bg2:#141b45;--pan:#1a2354;--line:rgba(255,255,255,.09);--tx:#e8ebf8;--mut:#98a1c8;
+--ac:hsl(var(--h),82%,64%);--acs:hsla(var(--h),85%,60%,.16);--ink:#0c1129}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);overscroll-behavior:none}
+body{font:15px/1.35 system-ui,Roboto,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation;
+background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);background-size:26px 26px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:560px;margin:0 auto;padding-top:env(safe-area-inset-top)}
+#top{padding:8px 16px 6px;background:linear-gradient(var(--bg) 70%,transparent);position:relative;z-index:5}
+.row1{display:flex;justify-content:space-between;align-items:baseline;color:var(--mut);font-size:13px}
+#kVal{font:600 38px/1.1 Georgia,"Times New Roman",serif;color:var(--tx);letter-spacing:-.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#cps{color:var(--ac);font-weight:600}
+#goal{font-size:12.5px;color:var(--mut);margin-top:2px;min-height:16px}
+#buffs{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;min-height:0}
+.chip{background:var(--acs);color:var(--ac);border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600}
+#view{flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 12px 14px;-webkit-overflow-scrolling:touch}
+.tab{display:none}.tab.on{display:block}
+#nav{display:grid;grid-template-columns:repeat(5,1fr);background:#0a0f27;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+#nav button{padding:7px 0 6px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:1px;position:relative;border-top:2px solid transparent}
+#nav button b{font:400 21px/1.1 Georgia,serif}#nav button span{font-size:11px}
+#nav button.on{color:var(--ac);border-top-color:var(--ac)}
+#nav button.dot::after{content:"";position:absolute;top:6px;right:calc(50% - 20px);width:8px;height:8px;border-radius:50%;background:#ff6b8b}
+.card{background:var(--pan);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px}
+.mut{color:var(--mut);font-size:13px}
+.h{font:600 17px Georgia,serif;margin-bottom:4px}
+.big2{font:600 26px Georgia,serif}
+.hint{border-color:var(--ac);background:var(--acs);font-size:14px}
+.seg{display:flex;background:var(--bg2);border-radius:12px;padding:3px;margin:6px 0 10px;gap:2px}
+.seg button{flex:1;padding:8px 2px;border-radius:9px;color:var(--mut);font-size:13px}
+.seg button.on{background:var(--pan);color:var(--tx);box-shadow:0 0 0 1px var(--line)}
+#proof{display:flex;flex-direction:column;align-items:center;justify-content:center;width:158px;height:158px;border-radius:50%;margin:6px auto 14px;
+background:radial-gradient(circle at 35% 28%,hsl(var(--h),92%,78%),hsl(var(--h),72%,50%) 52%,hsl(var(--h),60%,24%));
+box-shadow:0 0 0 7px var(--acs),0 10px 44px hsla(var(--h),85%,55%,.38);color:var(--ink);transition:transform .07s;touch-action:manipulation}
+#proof.press{transform:scale(.93)}
+#pg{font:600 54px/1 Georgia,serif}#pg.long{font-size:34px}
+.pt{font-size:13px;font-weight:600;margin-top:4px;opacity:.75}
+.gen{position:relative;display:grid;grid-template-columns:46px 1fr auto;gap:10px;align-items:center;background:var(--pan);border:1px solid var(--line);border-radius:14px;padding:10px 10px 12px;margin-bottom:8px;overflow:hidden}
+.gen.lock{opacity:.5}
+.gsym{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--acs);color:var(--ac);font:600 21px Georgia,serif}
+.gsym.long{font-size:13px}
+.gname{font-weight:600;font-size:15px}.gcnt{color:var(--ac);font-family:Georgia,serif;margin-left:4px}
+.gdesc{color:var(--mut);font-size:12px;margin-top:1px}.gstat{font-size:12px;margin-top:3px;color:var(--tx);opacity:.85}
+.gbar{position:absolute;left:0;bottom:0;height:3px;background:var(--ac);opacity:.8;width:0}
+.buy{min-width:94px;padding:8px 10px;border-radius:10px;background:var(--bg2);color:var(--mut);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;font-size:12.5px;line-height:1.25}
+.buy .cost{font-weight:600;font-size:13.5px}
+.buy.can{background:var(--ac);color:var(--ink);border-color:transparent}
+.buy:disabled{opacity:.55}
+.up{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.up .ut{flex:1}
+.shop .st{display:flex;justify-content:space-between;align-items:baseline}.shop .lv{color:var(--ac);font-size:13px}
+.shop .eff{font-size:12.5px;margin:3px 0 8px;color:var(--ac)}
+.shop .buy{width:100%;flex-direction:row;justify-content:space-between}
+.btn{padding:11px 16px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);font-weight:600;width:100%;margin-top:6px}
+.btn.pri{background:var(--ac);color:var(--ink);border-color:transparent}
+.btn.dis{opacity:.45}
+.bar{height:7px;border-radius:4px;background:rgba(255,255,255,.09);overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--ac);width:0}
+.ach{display:flex;gap:10px;align-items:center;opacity:.45}.ach.got{opacity:1}
+.ach .ai{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);font:600 16px Georgia,serif;flex:none}
+.ach.got .ai{background:var(--ac);color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cc{aspect-ratio:1;border-radius:12px;background:var(--bg2);display:grid;place-items:center;font:600 22px Georgia,serif;color:#4a5384;border:1px solid var(--line)}
+.cc.got{background:var(--acs);color:var(--ac);border-color:var(--ac)}
+.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}.row:last-child{border:0}
+.row span:last-child{font-family:Georgia,serif;color:var(--ac)}
+.res h4{margin:0 0 2px;font:600 16px Georgia,serif}
+.tg{display:flex;gap:6px}.tg button{flex:1;padding:9px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);font-size:13.5px}.tg button.on{border-color:var(--ac);color:var(--ac)}
+#toasts{position:fixed;top:calc(8px + env(safe-area-inset-top));left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:60;pointer-events:none}
+.toast{background:#0a0f27ee;border:1px solid var(--ac);color:var(--tx);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:90%;animation:tin .25s ease-out}
+@keyframes tin{from{transform:translateY(-12px);opacity:0}}
+.fl{position:fixed;pointer-events:none;font:600 17px Georgia,serif;color:var(--ac);text-shadow:0 1px 6px #000;z-index:40;transform:translate(-50%,-50%);animation:fl .9s ease-out forwards}
+@keyframes fl{to{transform:translate(-50%,-90px);opacity:0}}
+#orb{position:fixed;width:66px;height:66px;border-radius:50%;z-index:50;font:700 30px Georgia,serif;color:var(--ink);
+background:radial-gradient(circle at 35% 30%,#fff,hsl(var(--h),92%,70%) 45%,hsl(var(--h),80%,45%));box-shadow:0 0 0 6px var(--acs),0 0 34px hsla(var(--h),95%,65%,.8);
+animation:orb 5s ease-in-out infinite alternate}
+@keyframes orb{from{transform:translate(0,0) scale(1)}to{transform:translate(24px,-30px) scale(1.12)}}
+.hide{display:none!important}
+.ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,8,25,.76);display:flex;align-items:center;justify-content:center;z-index:100;padding:18px}
+.mod{background:var(--pan);border:1px solid var(--line);border-radius:18px;padding:18px;max-width:430px;width:100%;max-height:84vh;overflow:auto;-webkit-user-select:text;user-select:text}
+.mod h3{margin:0 0 8px;font:600 21px Georgia,serif}.mod p{margin:6px 0}
+.opt{display:block;width:100%;text-align:left;padding:11px 13px;margin-top:7px;border-radius:11px;background:var(--bg2);border:1px solid var(--line)}
+.opt.ok{background:#1f6b47;border-color:#3fd08a}.opt.bad{background:#7a2740;border-color:#ff6b8b}
+textarea{width:100%;height:130px;background:var(--bg2);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:8px;font-size:12px;-webkit-user-select:text;user-select:text}
+.mc{display:flex;gap:10px;align-items:flex-start;opacity:.5}.mc.got{opacity:1}
+.mc .mi{width:42px;height:42px;border-radius:50%;background:var(--bg2);display:grid;place-items:center;font:600 19px Georgia,serif;flex:none}.mc.got .mi{background:var(--ac);color:var(--ink)}
+.mc b{font-size:15px}.mc .me{color:var(--ac);font-size:12.5px;margin-top:2px}
+.mod ul{margin:6px 0;padding-left:18px}.mod li{margin:3px 0}
+@media (prefers-reduced-motion:reduce){#orb{animation:none}.toast{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="row1"><span>Знание</span><span id="cps">0 / с</span></div>
+    <div id="kVal">0</div>
+    <div id="goal"></div>
+    <div id="buffs"></div>
+  </header>
+  <main id="view">
+    <section class="tab on" id="t-theory">
+      <div id="hint" class="card hint"></div>
+      <button id="proof" aria-label="Доказать теорему"><span id="pg">7</span><span class="pt">доказать</span></button>
+      <div class="seg" id="buyseg">
+        <button data-m="1">×1</button><button data-m="10">×10</button><button data-m="100">×100</button><button data-m="max">Макс</button>
+      </div>
+      <div id="gens"></div>
+    </section>
+    <section class="tab" id="t-upg">
+      <div class="mut" id="upgInfo" style="margin:8px 2px"></div>
+      <div id="upgList"></div>
+    </section>
+    <section class="tab" id="t-grow">
+      <div class="seg" id="growseg"><button data-s="ax" class="on">Аксиомы</button><button data-s="par">Парадигмы</button><button data-s="uni">Вселенные</button></div>
+      <div id="axPane"></div><div id="parPane" class="hide"></div><div id="uniPane" class="hide"></div>
+    </section>
+    <section class="tab" id="t-goals">
+      <div class="seg" id="goalsseg"><button data-s="ach" class="on">Награды</button><button data-s="res">Проблемы</button><button data-s="quest">Задания</button><button data-s="math">Совет</button></div>
+      <div id="achPane"></div><div id="resPane" class="hide"></div><div id="questPane" class="hide"></div><div id="mathPane" class="hide"></div>
+    </section>
+    <section class="tab" id="t-menu"><div id="menuPane"></div></section>
+  </main>
+  <nav id="nav">
+    <button data-t="theory" class="on"><b>Σ</b><span>Теория</span></button>
+    <button data-t="upg"><b>∂</b><span>Улучшения</span></button>
+    <button data-t="grow"><b>∞</b><span>Рост</span></button>
+    <button data-t="goals"><b>∀</b><span>Цели</span></button>
+    <button data-t="menu"><b>≡</b><span>Меню</span></button>
+  </nav>
+</div>
+<div id="toasts"></div>
+<button id="orb" class="hide" aria-label="Озарение"></button>
+<div id="modal" class="ov hide"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   ПРЕДЕЛ — idle-игра про математику и информатику
+   ===================================================================== */
+const KEY = 'predel_save_v1';
+const NOW = () => (typeof __T !== 'undefined' ? __T : Date.now());
+const el = id => document.getElementById(id);
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- форматирование ---------- */
+const SUF = ['', 'тыс', 'млн', 'млрд', 'трлн', 'квдр', 'квнт', 'скст', 'сптл', 'октл', 'нонл', 'децл'];
+function fmt(x) {
+  if (x === undefined || x === null || isNaN(x)) return '0';
+  if (!isFinite(x)) return '∞';
+  if (x < 0) return '−' + fmt(-x);
+  if (x < 1000) {
+    if (x === Math.floor(x)) return String(x);
+    return x < 10 ? x.toFixed(2) : x < 100 ? x.toFixed(1) : String(Math.floor(x));
+  }
+  if (!S.set.sci && x < 1e36) {
+    const e = Math.floor(Math.log10(x) / 3), m = x / Math.pow(10, e * 3);
+    return (m < 10 ? m.toFixed(2) : m < 100 ? m.toFixed(1) : m.toFixed(0)) + ' ' + SUF[e];
+  }
+  const e = Math.floor(Math.log10(x)), m = x / Math.pow(10, e);
+  return m.toFixed(2) + 'e' + e;
+}
+function fmtT(s) {
+  s = Math.max(0, Math.floor(s));
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), c = s % 60;
+  if (d) return d + 'д ' + h + 'ч';
+  if (h) return h + 'ч ' + m + 'м';
+  if (m) return m + 'м ' + c + 'с';
+  return c + 'с';
+}
+
+/* ---------- данные: генераторы ---------- */
+const NG = 24;
+const GEN = [
+  ['Цифры', '7', 'Десять символов, из которых строится счёт.'],
+  ['Натуральные числа ℕ', 'ℕ', 'Счёт, порядок и принцип индукции.'],
+  ['Целые числа ℤ', 'ℤ', 'Появились ноль и отрицательные числа.'],
+  ['Рациональные ℚ', 'ℚ', 'Дроби: везде плотно, но с дырами.'],
+  ['Вещественные ℝ', 'ℝ', 'Полнота: у ограниченных последовательностей есть предел.'],
+  ['Комплексные ℂ', 'ℂ', '√−1 теперь тоже число. Плоскость вместо прямой.'],
+  ['Векторные пространства', '→', 'Линейность, базисы и размерность.'],
+  ['Группы', '⊕', 'Симметрии в чистом виде.'],
+  ['Кольца и поля', '⊗', 'Сложение и умножение живут вместе.'],
+  ['Графы', '•–•', 'Вершины, рёбра, обходы и раскраски.'],
+  ['Алгоритмы', 'O(n)', 'Как сделать быстро — и доказать, что быстрее нельзя.'],
+  ['Машины Тьюринга', '⊢', 'Что вообще можно вычислить?'],
+  ['Метрические пространства', 'd', 'Расстояние как аксиома.'],
+  ['Гильбертовы пространства', '‹·›', 'Бесконечномерная геометрия со скалярным произведением.'],
+  ['Топологические пространства', 'τ', 'Открытые множества вместо расстояний. Вот это абстракция.'],
+  ['Многообразия', 'M', 'Локально плоско, глобально — как повезёт.'],
+  ['Категории', '⇒', 'Объекты забыты, остались одни стрелки.'],
+  ['Топосы', '⊤', 'Целые вселенные, в которых живёт своя логика.'],
+  ['Гомотопические группы', 'π₁', 'Петли в пространстве и то, во что они стягиваются.'],
+  ['Схемы', 'Spec', 'Геометрия, в которой точки — это простые идеалы колец.'],
+  ['Когомологии', 'H*', 'Дыры пространства, переведённые на язык алгебры.'],
+  ['∞-категории', '(∞,1)', 'Стрелки между стрелками между стрелками…'],
+  ['Гомотопическая теория типов', 'HoTT', 'Равенство — это путь, а доказательство — это программа.'],
+  ['Универсум Гротендика', 'U', 'Достаточно большое множество, чтобы вместить всю математику.']
+].map((a, i) => ({ name: a[0], sym: a[1], desc: a[2], cost: 15 * Math.pow(13, i), prod: 0.4 * Math.pow(6.8, i), g: 1.15 + 0.004 * i }));
+const MS = [10, 25, 50, 100, 150, 200, 300, 400, 500, 750, 1000, 1500, 2000];
+
+/* ---------- данные: улучшения ---------- */
+const UPG = [];
+const UT = [[5, 20, 2, 'Лемма'], [25, 2e3, 3, 'Теорема'], [75, 1e6, 5, 'Следствие'], [200, 1e11, 10, 'Обобщение']];
+GEN.forEach((g, i) => UT.forEach((t, j) => UPG.push({
+  id: 'g' + i + '_' + j, t: 'gen', i, m: t[2], cost: g.cost * t[1], req: () => S.g[i] >= t[0],
+  name: g.name.split(' ')[0] === 'Цифры' ? 'Цифры: ' + t[3].toLowerCase() : t[3] + ' о «' + g.name + '»',
+  desc: '×' + t[2] + ' к производству «' + g.name + '»'
+})));
+[
+  ['c1', 'click', 2, 50, 'Мел и доска', 'Клик ×2'],
+  ['c2', 'pct', 0.01, 5e3, 'Дедукция', 'Клик получает +1% вашего дохода в секунду'],
+  ['c3', 'click', 3, 2e5, 'Озарение в душе', 'Клик ×3'],
+  ['c4', 'pct', 0.02, 5e7, 'Интуиция', 'Клик получает ещё +2% дохода в секунду'],
+  ['c5', 'click', 5, 1e10, 'Вдохновение', 'Клик ×5'],
+  ['c6', 'pct', 0.05, 1e14, 'Состояние потока', 'Клик получает ещё +5% дохода в секунду'],
+  ['c7', 'click', 10, 1e20, 'Эврика!', 'Клик ×10'],
+  ['m1', 'glob', 1.5, 5e2, 'Крепкий кофе', 'Всё производство ×1,5'],
+  ['m2', 'glob', 2, 1e5, 'Тихий кабинет', 'Всё производство ×2'],
+  ['m3', 'glob', 2, 1e8, 'Доступ к arXiv', 'Всё производство ×2'],
+  ['m4', 'glob', 2, 1e12, 'Научный руководитель', 'Всё производство ×2'],
+  ['m5', 'glob', 3, 1e16, 'Грант на пять лет', 'Всё производство ×3'],
+  ['m6', 'glob', 3, 1e22, 'Суперкомпьютер', 'Всё производство ×3'],
+  ['m7', 'glob', 5, 1e30, 'Квантовый компьютер', 'Всё производство ×5'],
+  ['m8', 'glob', 5, 1e40, 'Международная коллаборация', 'Всё производство ×5'],
+  ['m9', 'glob', 10, 1e55, 'ИИ-математик', 'Всё производство ×10'],
+  ['m10', 'glob', 10, 1e75, 'Доказательства в Lean', 'Всё производство ×10'],
+  ['h1', 'hotel', 1, 1e9, 'Отель Гильберта', '+0,5% к производству за каждую единицу любого генератора']
+].forEach(a => UPG.push({ id: a[0], t: a[1], m: a[2], cost: a[3], name: a[4], desc: a[5] }));
+const UPG_BY = {}; UPG.forEach(u => UPG_BY[u.id] = u);
+
+/* ---------- данные: магазин аксиом ---------- */
+const startK = L => L ? Math.pow(10, 2 * L + 1) : 0;
+const AXU = [
+  { id: 'start', name: 'Принцип индукции', d: 'После сброса вы начинаете не с нуля.', max: 8, cost: L => Math.ceil(2 * Math.pow(3, L)), eff: L => 'старт с ' + fmt(startK(L)) + ' знания' },
+  { id: 'choice', name: 'Аксиома выбора', d: 'Выбираем элемент из каждого множества — и всё производство растёт.', max: 25, cost: L => Math.ceil(3 * Math.pow(1.5, L)), eff: L => '×' + fmt(Math.pow(1.25, L)) },
+  { id: 'inf', name: 'Аксиома бесконечности', d: 'Цены генераторов растут медленнее.', max: 10, cost: L => Math.ceil(8 * Math.pow(1.8, L)), eff: L => '−' + (0.004 * L).toFixed(3) + ' к росту цены' },
+  { id: 'pair', name: 'Аксиома пары', d: 'Каждый клик мощнее.', max: 12, cost: L => Math.ceil(4 * Math.pow(1.7, L)), eff: L => 'клик ×' + fmt(Math.pow(2, L)) },
+  { id: 'pow', name: 'Аксиома степени', d: 'Рубежи (10, 25, 50, …) дают больше, чем ×2.', max: 10, cost: L => Math.ceil(15 * Math.pow(1.9, L)), eff: L => 'рубеж ×' + (2 + 0.1 * L).toFixed(1) },
+  { id: 'union', name: 'Аксиома объединения', d: 'Больше аксиом при каждой аксиоматизации.', max: 15, cost: L => Math.ceil(5 * Math.pow(1.55, L)), eff: L => '+' + 10 * L + '% аксиом' },
+  { id: 'subst', name: 'Аксиома подстановки', d: 'Озарения приходят чаще и действуют дольше.', max: 8, cost: L => Math.ceil(6 * Math.pow(1.8, L)), eff: L => 'интервал ×' + Math.pow(0.92, L).toFixed(2) + ', длит. +' + 10 * L + '%' },
+  { id: 'reg', name: 'Аксиома регулярности', d: 'Дольше работаем, пока вас нет.', max: 6, cost: L => Math.ceil(10 * Math.pow(2.5, L)), eff: L => 'оффлайн до ' + (4 + 2 * L) + ' ч' },
+  { id: 'empty', name: 'Пустое множество', d: 'Из ничего получается автоклик.', max: 10, cost: L => Math.ceil(12 * Math.pow(1.8, L)), eff: L => L + ' авто-кликов в секунду' },
+  { id: 'zorn', name: 'Лемма Цорна', d: 'Эквивалентна аксиоме выбора, а ещё удваивает бонус достижений.', max: 1, cost: () => 400, eff: () => 'достижения: +4% вместо +2%' }
+];
+const PARU = [
+  { id: 'auto1', name: 'Автоматизация I', d: 'Генераторы от «Цифр» до «Комплексных» покупаются сами.', max: 1, cost: () => 1, eff: () => 'автопокупка 1–6' },
+  { id: 'auto2', name: 'Автоматизация II', d: 'От «Векторных пространств» до «Машин Тьюринга».', max: 1, cost: () => 3, eff: () => 'автопокупка 7–12' },
+  { id: 'auto3', name: 'Автоматизация III', d: 'От «Метрических» до «Топосов».', max: 1, cost: () => 8, eff: () => 'автопокупка 13–18' },
+  { id: 'autoU', name: 'Автоматизация IV', d: 'Улучшения покупаются сами, когда хватает знания.', max: 1, cost: () => 5, eff: () => 'автопокупка улучшений' },
+  { id: 'univ', name: 'Вселенная дискурса', d: 'Расширяем универсум — всё растёт.', max: 20, cost: L => Math.ceil(2 * Math.pow(1.6, L)), eff: L => '×' + fmt(Math.pow(2, L)) + ' ко всему' },
+  { id: 'axg', name: 'Школа Бурбаки', d: 'Аксиом за каждую аксиоматизацию становится больше.', max: 15, cost: L => Math.ceil(3 * Math.pow(1.7, L)), eff: L => 'аксиомы ×' + Math.pow(1.5, L).toFixed(2) },
+  { id: 'heir', name: 'Наследие', d: 'Новая парадигма стартует с запасом аксиом.', max: 10, cost: L => Math.ceil(2 * Math.pow(1.8, L)), eff: L => 'старт с ' + 15 * L + ' аксиом' },
+  { id: 'lazy', name: 'Ленивый математик', d: 'Теоремы доказываются сами, пока вы спите.', max: 5, cost: L => Math.ceil(4 * Math.pow(2, L)), eff: L => 'оффлайн ' + (50 + 10 * L) + '%, лимит +' + 4 * L + ' ч' },
+  { id: 'lucky', name: 'Везение', d: 'Озарения чаще и длиннее.', max: 5, cost: L => Math.ceil(3 * Math.pow(2, L)), eff: L => 'длит. +' + 30 * L + '%, интервал ×' + Math.pow(0.9, L).toFixed(2) },
+  { id: 'rspeed', name: 'Научная школа', d: 'Проблемы тысячелетия решаются быстрее.', max: 4, cost: L => Math.ceil(10 * Math.pow(2, L)), eff: L => '−' + Math.round(100 - 100 * Math.pow(0.8, L)) + '% времени' },
+  { id: 'unlockRes', name: 'Институт Клэя', d: 'Открывает вкладку «Проблемы тысячелетия» (раздел «Цели»).', max: 1, cost: () => 4, eff: () => 'открывает исследования' }
+];
+
+const UNI_MIN = 40;
+const UNIU = [
+  { id: 'uglob', name: 'Космологическая константа', d: 'Законы природы чуть удобнее для математиков.', max: 12, cost: L => Math.ceil(Math.pow(1.9, L)), eff: L => '×' + fmt(Math.pow(3, L)) + ' ко всему' },
+  { id: 'upar', name: 'Мост между вселенными', d: 'Больше парадигм за каждую смену.', max: 10, cost: L => Math.ceil(2 * Math.pow(1.8, L)), eff: L => 'парадигмы ×' + Math.pow(1.5, L).toFixed(2) },
+  { id: 'uax', name: 'Эхо аксиом', d: 'Больше аксиом при каждой аксиоматизации.', max: 8, cost: L => Math.ceil(3 * Math.pow(2, L)), eff: L => 'аксиомы ×' + fmt(Math.pow(2, L)) },
+  { id: 'uheir', name: 'Память вселенной', d: 'Новая вселенная начинается со стартовыми парадигмами.', max: 10, cost: L => Math.ceil(2 * Math.pow(1.7, L)), eff: L => 'старт с ' + 3 * L + ' парадигм' },
+  { id: 'uev', name: 'Квантовые флуктуации', d: 'Озарения возникают чаще и держатся дольше.', max: 5, cost: L => Math.ceil(3 * Math.pow(2, L)), eff: L => 'интервал ×' + Math.pow(0.85, L).toFixed(2) + ', длит. +' + 20 * L + '%' },
+  { id: 'uauto', name: 'Автоаксиоматизация', d: 'Теория сама переписывается, когда это выгодно. Включается в меню.', max: 1, cost: () => 2, eff: () => 'авто-сброс аксиом' }
+];
+const MATHS = [
+  { id: 'euclid', n: 'Евклид', y: 'III в. до н. э.', s: '«Начала»: аксиомы, теоремы, доказательства.', e: 'Цифры — ℚ ×3', fx: { t: 'gens', a: 0, b: 3, m: 3 } },
+  { id: 'arch', n: 'Архимед', y: '287–212 до н. э.', s: 'Метод исчерпывания — предтеча интегралов.', e: 'Клик ×3', fx: { t: 'click', m: 3 } },
+  { id: 'khwar', n: 'Аль-Хорезми', y: 'ок. 780–850', s: 'От его имени произошло слово «алгоритм».', e: 'Алгоритмы ×4', fx: { t: 'gens', a: 10, b: 10, m: 4 } },
+  { id: 'galois', n: 'Эварист Галуа', y: '1811–1832', s: 'Создал теорию групп и погиб на дуэли в 20 лет.', e: 'Группы, Кольца и поля ×4', fx: { t: 'gens', a: 7, b: 8, m: 4 } },
+  { id: 'euler', n: 'Леонард Эйлер', y: '1707–1783', s: 'Теория графов, e^{iπ} и тысячи страниц открытий.', e: 'Всё ×1,2', fx: { t: 'glob', m: 1.2 } },
+  { id: 'gauss', n: 'Карл Гаусс', y: '1777–1855', s: 'Король математиков. Сумму 1…100 нашёл за минуту.', e: 'Рубежи +0,05 к множителю', fx: { t: 'ms', m: 0.05 } },
+  { id: 'lobach', n: 'Николай Лобачевский', y: '1792–1856', s: 'Построил первую неевклидову геометрию.', e: 'Метрические — Топологические ×3', fx: { t: 'gens', a: 12, b: 14, m: 3 } },
+  { id: 'riemann', n: 'Бернхард Риман', y: '1826–1866', s: 'Многообразия, дзета-функция и знаменитая гипотеза.', e: 'Многообразия ×5', fx: { t: 'gens', a: 15, b: 15, m: 5 } },
+  { id: 'cantor', n: 'Георг Кантор', y: '1845–1918', s: 'Показал, что бесконечности бывают разных размеров.', e: 'Озарения чаще (×0,85)', fx: { t: 'ev', m: 0.85 } },
+  { id: 'poinc', n: 'Анри Пуанкаре', y: '1854–1912', s: 'Один из основателей топологии.', e: 'Топологические пространства ×5', fx: { t: 'gens', a: 14, b: 14, m: 5 } },
+  { id: 'hilbert', n: 'Давид Гильберт', y: '1862–1943', s: 'Составил список из 23 проблем на весь век.', e: 'Всё ×1,2', fx: { t: 'glob', m: 1.2 } },
+  { id: 'noether', n: 'Эмми Нётер', y: '1882–1935', s: 'Её теорема связывает симметрии с законами сохранения.', e: 'Векторные, Группы, Кольца ×3', fx: { t: 'gens', a: 6, b: 8, m: 3 } },
+  { id: 'godel', n: 'Курт Гёдель', y: '1906–1978', s: 'Теоремы о неполноте показали пределы формальных систем.', e: 'Аксиом +15%', fx: { t: 'ax', m: 1.15 } },
+  { id: 'turing', n: 'Алан Тьюринг', y: '1912–1954', s: 'Дал определение вычислимости и взломал «Энигму».', e: 'Алгоритмы, Машины Тьюринга ×4', fx: { t: 'gens', a: 10, b: 11, m: 4 } },
+  { id: 'kovalev', n: 'Софья Ковалевская', y: '1850–1891', s: 'Первая женщина — профессор Стокгольмского университета.', e: 'Цены растут медленнее (−0,003)', fx: { t: 'cost', m: 0.003 } },
+  { id: 'raman', n: 'Сриниваса Рамануджан', y: '1887–1920', s: 'Самоучка, открывший тысячи формул для рядов и дробей.', e: 'ℚ, ℝ, ℂ ×4', fx: { t: 'gens', a: 3, b: 5, m: 4 } },
+  { id: 'kolmog', n: 'Андрей Колмогоров', y: '1903–1987', s: 'Заложил аксиоматику теории вероятностей.', e: 'Исследования на 20% быстрее', fx: { t: 'rsp', m: 0.8 } },
+  { id: 'erdos', n: 'Пол Эрдёш', y: '1913–1996', s: 'Сотни соавторов и полторы тысячи статей.', e: 'Озарения длятся дольше ×1,3', fx: { t: 'dur', m: 1.3 } },
+  { id: 'grothen', n: 'Александр Гротендик', y: '1928–2014', s: 'Схемы, топосы, категории — он перестроил геометрию.', e: 'Категории — Универсум ×3', fx: { t: 'gens', a: 16, b: 23, m: 3 } },
+  { id: 'lovelace', n: 'Ада Лавлейс', y: '1815–1852', s: 'Написала первую программу для вычислительной машины.', e: 'Оффлайн-доход +10%', fx: { t: 'off', m: 0.1 } },
+  { id: 'neumann', n: 'Джон фон Нейман', y: '1903–1957', s: 'Архитектура компьютера и теория игр.', e: 'Всё ×1,15', fx: { t: 'glob', m: 1.15 } },
+  { id: 'shannon', n: 'Клод Шеннон', y: '1916–2001', s: 'Отец теории информации. Ввёл понятие бита.', e: 'Графы, Алгоритмы, Машины ×3', fx: { t: 'gens', a: 9, b: 11, m: 3 } },
+  { id: 'perel', n: 'Григорий Перельман', y: 'род. 1966', s: 'Доказал гипотезу Пуанкаре и отказался от премии.', e: 'Клик ×10', fx: { t: 'click', m: 10 } }
+];
+const FACTS = [
+  'Десятичная позиционная система пришла из Индии через арабский мир. Ноль как число — одно из величайших изобретений.',
+  'Аксиомы Пеано описывают натуральные числа несколькими утверждениями, включая принцип индукции.',
+  'В Европе отрицательные числа принимали неохотно вплоть до XVII века, а в Индии и Китае ими пользовались раньше.',
+  'Рациональных чисел столько же, сколько натуральных: их можно перенумеровать (Кантор).',
+  'Вещественных чисел несчётно много: диагональный аргумент Кантора показывает, что списком их не перечислить.',
+  'Основная теорема алгебры: у любого непостоянного многочлена с комплексными коэффициентами есть комплексный корень.',
+  'У любого векторного пространства есть базис. В общем случае это опирается на аксиому выбора.',
+  'Группа-Монстр, самая большая из спорадических простых групп, содержит около 8·10⁵³ элементов.',
+  'Поле — это место, где можно делить на всё, кроме нуля. Конечные поля лежат в основе современной криптографии.',
+  'Задача о кёнигсбергских мостах (Эйлер, 1736) положила начало теории графов.',
+  'Слово «алгоритм» происходит от имени аль-Хорезми, а не от греческого слова.',
+  'Машина Тьюринга — воображаемый компьютер с бесконечной лентой. Реальные компьютеры вычисляют не больше, чем она.',
+  'Метрику можно задавать и на словах: расстояние Хэмминга считает, в скольких позициях слова различаются.',
+  'Квантовая механика живёт в гильбертовых пространствах: состояния системы — векторы в них.',
+  'Топология изучает свойства, не меняющиеся при непрерывных деформациях. Для неё кружка и бублик — одно и то же.',
+  'Поверхность Земли — двумерное многообразие: локально плоская, а глобально — шар.',
+  'Теорию категорий в шутку называли «абстрактной чепухой», но она объединила алгебру, топологию и логику.',
+  'Топос — категория, которая ведёт себя как вселенная множеств и в которой можно делать математику со своей логикой.',
+  'Фундаментальная группа окружности — это ℤ: она считает, сколько раз петля обошла окружность.',
+  'Схемы Гротендика стали основой современной алгебраической геометрии.',
+  'Когомологии превращают топологические вопросы о «дырах» в алгебраические вычисления.',
+  'В ∞-категориях равенство заменяют эквивалентностью, у которой есть своя высшая структура.',
+  'В гомотопической теории типов равенство двух объектов — это путь между ними.',
+  'Универсум Гротендика — достаточно большое множество, внутри которого можно строить всю обычную математику.'
+];
+const CHANGELOG = '<h3>Обновление 2.0</h3><ul><li><b>6 новых ступеней</b>: от гомотопических групп до универсума Гротендика.</li><li><b>Третий престиж — Вселенные.</b> Новый слой роста и 6 усилений, включая автоаксиоматизацию.</li><li><b>Совет математиков.</b> 23 учёных, каждый со своим бонусом. Они приходят вместе с озарениями Ψ.</li><li><b>Задания.</b> Три активных, награда растёт вместе с доходом.</li><li><b>Ежедневный бонус</b> за вход в игру.</li><li><b>Энциклопедия</b> в меню: факты о каждой ступени.</li></ul>';
+
+/* ---------- данные: проблемы тысячелетия ---------- */
+const RES = [
+  { id: 'pnp', name: 'P против NP', flavor: 'Если решение легко проверить, легко ли его найти?', cost: 1e15, time: 600, rew: 'Цены растут на 0,006 медленнее', fx: { cost: 0.006 } },
+  { id: 'hodge', name: 'Гипотеза Ходжа', flavor: 'Когда топология многообразия записывается алгеброй.', cost: 1e22, time: 1800, rew: 'Всё производство ×4', fx: { glob: 4 } },
+  { id: 'poin', name: 'Гипотеза Пуанкаре', flavor: 'Односвязная трёхмерная сфера — только сфера. Доказал Перельман.', cost: 1e30, time: 3600, rew: 'Клик ×100', fx: { click: 100 } },
+  { id: 'riem', name: 'Гипотеза Римана', flavor: 'Все нетривиальные нули дзета-функции лежат на одной прямой.', cost: 1e38, time: 7200, rew: 'Аксиом при аксиоматизации ×2', fx: { ax: 2 } },
+  { id: 'ns', name: 'Навье — Стокс', flavor: 'Всегда ли у течения жидкости есть гладкое решение?', cost: 1e48, time: 14400, rew: 'Озарения вдвое чаще', fx: { ev: 0.5 } },
+  { id: 'ym', name: 'Янг — Миллс', flavor: 'Почему у частиц есть масса? Строгая квантовая теория поля.', cost: 1e60, time: 28800, rew: 'Всё производство ×10', fx: { glob: 10 } },
+  { id: 'bsd', name: 'Бёрч — Свиннертон-Дайер', flavor: 'Сколько рациональных точек на эллиптической кривой?', cost: 1e75, time: 43200, rew: 'Всё производство ×50', fx: { glob: 50 } }
+];
+
+/* ---------- данные: константы ---------- */
+const CONST = [
+  ['π', '3,14159… — отношение длины окружности к диаметру.'], ['e', '2,71828… — основание натурального логарифма.'],
+  ['φ', '1,61803… — золотое сечение.'], ['√2', '1,41421… — диагональ единичного квадрата, первое открытое иррациональное число.'],
+  ['i', 'Мнимая единица: i² = −1.'], ['γ', '0,57721… — постоянная Эйлера — Маскерони. Иррациональна ли она, никто не знает.'],
+  ['ζ(3)', '1,20205… — постоянная Апери. Иррациональна.'], ['δ', '4,66920… — постоянная Фейгенбаума, универсальна для удвоения периода.'],
+  ['G', '0,91596… — постоянная Каталана.'], ['ℵ₀', 'Мощность множества натуральных чисел.'],
+  ['Ω', 'Постоянная Хайтина: вероятность, что случайная программа остановится.'], ['K', '2,68545… — постоянная Хинчина.']
+];
+
+/* ---------- данные: вопросы (первый ответ — верный) ---------- */
+const QZ = [
+  ['Сколько существует простых чисел?', ['Бесконечно много', 'Конечное число', 'Ровно 10⁹', 'Только нечётные'], 'Евклид: допустив конечный список, можно построить новое простое.'],
+  ['Чему равно e^{iπ} + 1?', ['0', '1', '−1', 'i'], 'Тождество Эйлера связывает e, i, π, 1 и 0.'],
+  ['Сложность бинарного поиска в отсортированном массиве?', ['O(log n)', 'O(n)', 'O(n²)', 'O(1)'], 'Каждый шаг отбрасывает половину.'],
+  ['Сколько рёбер в полном графе K₅?', ['10', '5', '15', '20'], '5·4/2 = 10.'],
+  ['Множество с ассоциативной операцией, нейтральным и обратными элементами — это…', ['Группа', 'Кольцо', 'Поле', 'Решётка'], 'Это определение группы.'],
+  ['Эйлерова характеристика тора?', ['0', '1', '2', '−1'], 'V − E + F = 0 для тора; для сферы 2.'],
+  ['Сколько подмножеств у 4-элементного множества?', ['16', '8', '12', '24'], '2⁴ = 16.'],
+  ['Чему равно 0! ?', ['1', '0', 'Не определено', '∞'], 'Пустое произведение равно 1.'],
+  ['Разрешима ли алгоритмически проблема остановки?', ['Нет', 'Да', 'Только для C++', 'Только до 1000 строк'], 'Тьюринг, 1936.'],
+  ['Как называют задачи, решение которых проверяется за полиномиальное время?', ['NP', 'P', 'PSPACE', 'EXP'], 'P ⊆ NP, а равенство — открытая проблема.'],
+  ['Число π является…', ['Трансцендентным', 'Рациональным', 'Целым', 'Корнем x² = 10'], 'Линдеман, 1882. Отсюда невозможность квадратуры круга.'],
+  ['Как обозначают мощность множества натуральных чисел?', ['ℵ₀', 'c', 'ω₁', 'Ω'], 'Алеф-нуль — наименьшая бесконечная мощность.'],
+  ['Какой объект гомеоморфен тору (бублику)?', ['Кружка с ручкой', 'Шар', 'Лист Мёбиуса', 'Сфера'], 'У обоих ровно одна «дыра».'],
+  ['Сколько цветов хватит для раскраски любой карты на плоскости?', ['4', '3', '5', '6'], 'Теорема о четырёх красках, 1976 — первое крупное доказательство с компьютером.'],
+  ['Что можно сказать о ряде 1 + 1/2 + 1/3 + 1/4 + …?', ['Расходится', 'Сходится к 2', 'Сходится к e', 'Сходится к π²/6'], 'Гармонический ряд растёт как ln n.'],
+  ['Кто доказал теоремы о неполноте?', ['Курт Гёдель', 'Алан Тьюринг', 'Давид Гильберт', 'Эмми Нётер'], '1931 год.'],
+  ['Порядок группы симметрий квадрата?', ['8', '4', '6', '16'], '4 поворота и 4 отражения.'],
+  ['Компактность подмножества ℝⁿ равносильна…', ['Замкнутости и ограниченности', 'Только ограниченности', 'Только замкнутости', 'Связности'], 'Теорема Гейне — Бореля.'],
+  ['Сумма чисел от 1 до 100?', ['5050', '5000', '5100', '10100'], 'Гаусс: 50 пар по 101.'],
+  ['Что находит алгоритм Дейкстры?', ['Кратчайшие пути', 'Остовное дерево', 'Максимальный поток', 'Простые числа'], 'В графе с неотрицательными весами.'],
+  ['Размерность пространства матриц 2×3?', ['6', '5', '3', '9'], 'Столько свободных элементов.'],
+  ['Чему равно двоичное число 1011?', ['11', '13', '9', '7'], '8 + 2 + 1 = 11.'],
+  ['Производная sin x?', ['cos x', '−cos x', '−sin x', 'tg x'], 'Классика матанализа.'],
+  ['Что такое λ-исчисление?', ['Модель вычислений', 'Раздел теории чисел', 'Язык разметки', 'Вид интеграла'], 'Чёрч, 1930-е; основа функционального программирования.'],
+  ['Сумма углов треугольника на плоскости?', ['180°', '90°', '270°', '360°'], 'На сфере сумма больше 180°.'],
+  ['Какое пространство называют хаусдорфовым?', ['Любые две точки имеют непересекающиеся окрестности', 'Все множества открыты', 'Оно компактно', 'Оно метризуемо'], 'Аксиома отделимости T₂.'],
+  ['Какая топология на множестве X самая грубая?', ['Тривиальная {∅, X}', 'Дискретная', 'Зарисского', 'Естественная'], 'Открытых множеств всего два.'],
+  ['log₂ 1024 =', ['10', '8', '12', '32'], '2¹⁰ = 1024.'],
+  ['Основная теорема арифметики утверждает…', ['Однозначность разложения на простые', 'Бесконечность простых', 'Каждое чётное — сумма двух простых', 'Малую теорему Ферма'], 'Разложение единственно с точностью до порядка.'],
+  ['Какое число иррационально?', ['√2', '0,(3)', '22/7', '1,25'], 'Доказательство от противного — классика.'],
+  ['Определитель единичной матрицы?', ['1', '0', 'n', '−1'], 'Произведение диагонали.'],
+  ['Фундаментальная группа окружности?', ['ℤ', 'Тривиальная', 'ℤ₂', 'ℝ'], 'Число оборотов вокруг окружности.']
+];
+
+/* =====================================================================
+   СОСТОЯНИЕ
+   ===================================================================== */
+function newState() {
+  return {
+    v: 1, k: 0, total: 0, run: 0, g: Array(NG).fill(0), upg: {},
+    ax: 0, axT: 0, axUp: {}, axResets: 0,
+    par: 0, parT: 0, parUp: {}, parResets: 0,
+    ach: {}, consts: {}, res: {}, resActive: null,
+    buffs: [], clicks: 0, caught: 0, quizOk: 0, quizAll: 0,
+    playTime: 0, created: Date.now(), last: Date.now(), buyMode: '1', maxGen: 0,
+    uni: 0, uniT: 0, uniUp: {}, uniResets: 0, maths: {}, quests: [], questsDone: 0, buys: 0, upBuys: 0,
+    daily: { d: 0, streak: 0 }, seenVer: 0,
+    set: { sci: false, vib: true, autoAx: false }
+  };
+}
+let S = newState();
+const axUp = id => S.axUp[id] || 0, parUp = id => S.parUp[id] || 0, uniUp = id => S.uniUp[id] || 0;
+
+let E = null;
+function recalc() {
+  E = { gm: Array(NG).fill(1), cm: 1, cp: 0, gl: 1, hotel: false, rg: 1, rc: 1, ra: 1, re: 1, rcost: 0, ms: 0, rdur: 1, roff: 0, rsp: 1 };
+  for (const u of UPG) {
+    if (!S.upg[u.id]) continue;
+    if (u.t === 'gen') E.gm[u.i] *= u.m; else if (u.t === 'click') E.cm *= u.m; else if (u.t === 'pct') E.cp += u.m;
+    else if (u.t === 'glob') E.gl *= u.m; else if (u.t === 'hotel') E.hotel = true;
+  }
+  for (const r of RES) {
+    if (!S.res[r.id]) continue;
+    const f = r.fx;
+    if (f.glob) E.rg *= f.glob; if (f.click) E.rc *= f.click; if (f.ax) E.ra *= f.ax; if (f.ev) E.re *= f.ev; if (f.cost) E.rcost += f.cost;
+  }
+  for (const m of MATHS) {
+    if (!S.maths[m.id]) continue;
+    const f = m.fx;
+    switch (f.t) {
+      case 'glob': E.rg *= f.m; break; case 'click': E.rc *= f.m; break; case 'ax': E.ra *= f.m; break; case 'ev': E.re *= f.m; break;
+      case 'dur': E.rdur *= f.m; break; case 'cost': E.rcost += f.m; break; case 'ms': E.ms += f.m; break; case 'off': E.roff += f.m; break; case 'rsp': E.rsp *= f.m; break;
+      case 'gens': for (let i = f.a; i <= f.b; i++) E.gm[i] *= f.m; break;
+    }
+  }
+}
+
+let CPS = 0, GM = 1, AC = 0, CC = 0, TO = 0;
+const msF = () => 2 + 0.1 * axUp('pow') + E.ms;
+function msMult(n) { let c = 0; for (const t of MS) { if (n >= t) c++; else break; } return c ? Math.pow(msF(), c) : 1; }
+function unit(i) { return GEN[i].prod * msMult(S.g[i]) * E.gm[i]; }
+function buffMult(k) { let m = 1; for (const b of S.buffs) if (b[k]) m *= b[k]; return m; }
+function gmult() {
+  const ach = AC * 0.02 * (axUp('zorn') ? 2 : 1);
+  let m = (1 + 0.04 * S.axT) * (1 + 0.5 * S.parT) * (1 + 1.5 * S.uniT) * (1 + ach + 0.05 * CC) * (1 + 0.01 * Math.min(S.questsDone, 200));
+  m *= Math.pow(3, uniUp('uglob'));
+  m *= Math.pow(1.25, axUp('choice')) * Math.pow(2, parUp('univ')) * E.gl * E.rg;
+  if (E.hotel) m *= 1 + 0.005 * TO;
+  return m * buffMult('prod');
+}
+function recompute() {
+  AC = Object.keys(S.ach).length; CC = Object.keys(S.consts).length;
+  TO = 0; for (let i = 0; i < NG; i++) TO += S.g[i];
+  GM = gmult();
+  let s = 0; for (let i = 0; i < NG; i++) if (S.g[i]) s += S.g[i] * unit(i);
+  CPS = s * GM;
+  if (!isFinite(CPS)) CPS = 1e300;
+}
+function clickVal() { return (GM + CPS * E.cp) * E.cm * E.rc * Math.pow(2, axUp('pair')) * buffMult('click'); }
+function addK(v) { if (!(v > 0)) return; S.k += v; S.total += v; S.run += v; }
+
+/* ---------- покупка генераторов ---------- */
+const growth = i => Math.max(1.03, GEN[i].g - 0.004 * axUp('inf') - E.rcost);
+function costFor(i, q) { const g = growth(i); return GEN[i].cost * Math.pow(g, S.g[i]) * (Math.pow(g, q) - 1) / (g - 1); }
+function maxAff(i, budget) {
+  if (budget === undefined) budget = S.k;
+  const g = growth(i), base = GEN[i].cost * Math.pow(g, S.g[i]);
+  if (budget < base) return 0;
+  let q = Math.floor(Math.log(1 + budget * (g - 1) / base) / Math.log(g));
+  q = Math.min(q, 100000);
+  while (q > 0 && costFor(i, q) > budget) q--;
+  return q;
+}
+function buyQty(i, q) { const c = costFor(i, q); if (q < 1 || S.k < c) return false; S.k -= c; S.g[i] += q; S.buys += q; if (i > S.maxGen) S.maxGen = i; return true; }
+function buyGen(i) {
+  const m = S.buyMode; let q = m === 'max' ? maxAff(i) : parseInt(m, 10);
+  if (!q) return false;
+  const ok = buyQty(i, q); if (ok) recompute(); return ok;
+}
+function upgVisible(u) { return (!u.req || u.req()) && (S.k >= u.cost * 0.15 || S.run >= u.cost * 0.5); }
+function buyUpg(id) { const u = UPG_BY[id]; if (S.upg[id] || S.k < u.cost) return false; S.k -= u.cost; S.upg[id] = 1; S.upBuys++; recalc(); recompute(); return true; }
+
+/* ---------- престиж ---------- */
+const AX_MIN = 1e8, PAR_MIN = 500;
+const axMods = () => (1 + 0.1 * axUp('union')) * Math.pow(1.5, parUp('axg')) * Math.pow(2, uniUp('uax')) * E.ra;
+function axiomGain() { if (S.run < AX_MIN) return 0; return Math.floor(Math.sqrt(S.run / AX_MIN) * axMods()); }
+function axNeed(g) { return AX_MIN * Math.pow(g / axMods(), 2); }
+function parGain() { if (S.axT < PAR_MIN) return 0; return Math.floor(Math.pow(S.axT / PAR_MIN, 0.6) * Math.pow(1.5, uniUp('upar'))); }
+function uniGain() { if (S.parT < UNI_MIN) return 0; return Math.floor(Math.sqrt(S.parT / UNI_MIN)); }
+function doAxiom(silent) {
+  const g = axiomGain(); if (g < 1) return;
+  S.ax += g; S.axT += g; S.axResets++;
+  S.k = startK(axUp('start')); S.run = 0; S.g.fill(0); S.upg = {};
+  recalc(); recompute(); if (!silent) { toast('+' + fmt(g) + ' аксиом. Теория переписана заново.'); save(); } updateUI(true);
+}
+function doParadigm() {
+  const g = parGain(); if (g < 1) return;
+  S.par += g; S.parT += g; S.parResets++;
+  S.ax = 15 * parUp('heir'); S.axT = 0; S.axUp = {}; S.upg = {}; S.buffs = [];
+  S.k = 0; S.run = 0; S.g.fill(0); S.maxGen = Math.max(S.maxGen, 0);
+  recalc(); recompute(); toast('+' + g + ' парадигм. Всё началось заново — но вы уже другой.'); save(); updateUI(true);
+}
+
+function doUniverse() {
+  const g = uniGain(); if (g < 1) return;
+  S.uni += g; S.uniT += g; S.uniResets++;
+  S.par = 3 * uniUp('uheir'); S.parT = 0; S.parUp = {}; S.ax = 0; S.axT = 0; S.axUp = {}; S.upg = {}; S.buffs = [];
+  S.k = 0; S.run = 0; S.g.fill(0);
+  recalc(); recompute(); toast('+' + g + ' вселенных. Новый мир, старые законы.'); save(); updateUI(true);
+}
+
+/* ---------- бафы и озарения ---------- */
+function addBuff(id, name, sec, o) {
+  S.buffs = S.buffs.filter(b => b.id !== id);
+  S.buffs.push(Object.assign({ id, name, left: sec }, o)); recompute();
+}
+const evDur = () => (1 + 0.1 * axUp('subst')) * (1 + 0.3 * parUp('lucky')) * (1 + 0.2 * uniUp('uev')) * E.rdur;
+const EV = [
+  { id: 'inspire', w: 30, glyph: 'π' }, { id: 'jackpot', w: 25, glyph: 'Σ' }, { id: 'flow', w: 20, glyph: '∫' },
+  { id: 'quiz', w: 16, glyph: '?' }, { id: 'const', w: 6, glyph: '✦' }, { id: 'math', w: 10, glyph: 'Ψ' }
+];
+let evT = rnd(40, 70), orbLeft = 0, orbType = null;
+function nextEvT() { return rnd(55, 110) * Math.pow(0.92, axUp('subst')) * Math.pow(0.9, parUp('lucky')) * Math.pow(0.85, uniUp('uev')) * E.re; }
+function spawnOrb() {
+  let tot = 0; EV.forEach(e => tot += e.w); let r = Math.random() * tot, t = EV[0];
+  for (const e of EV) { if ((r -= e.w) <= 0) { t = e; break; } }
+  orbType = t.id; const o = el('orb'); o.textContent = t.glyph;
+  const W = window.innerWidth || 360, H = window.innerHeight || 640;
+  o.style.left = Math.round(rnd(14, Math.max(20, Math.min(W, 560) - 90))) + 'px'; o.style.top = Math.round(rnd(150, Math.max(200, H - 220))) + 'px';
+  o.classList.remove('hide'); orbLeft = 14;
+}
+function hideOrb() { el('orb').classList.add('hide'); orbLeft = 0; evT = nextEvT(); }
+function claimOrb() {
+  if (!orbType) return; const t = orbType; orbType = null; hideOrb(); S.caught++; vib(15);
+  const d = evDur();
+  if (t === 'inspire') { addBuff('inspire', 'Вдохновение ×7', 30 * d, { prod: 7 }); toast('Вдохновение! Производство ×7 на ' + Math.round(30 * d) + ' с'); }
+  else if (t === 'jackpot') { const v = Math.max(CPS * 600 * d, clickVal() * 30); addK(v); toast('Прорыв! +' + fmt(v) + ' знания'); }
+  else if (t === 'flow') { addBuff('flow', 'Поток ×30', 20 * d, { click: 30 }); toast('Поток! Клики ×30 на ' + Math.round(20 * d) + ' с'); }
+  else if (t === 'quiz') showQuiz();
+  else if (t === 'math') grantMath();
+  else if (t === 'const') {
+    const left = CONST.map((c, i) => i).filter(i => !S.consts[i]);
+    if (left.length) { const i = left[Math.floor(Math.random() * left.length)]; S.consts[i] = 1; recompute(); toast('Найдена константа ' + CONST[i][0] + '! +5% ко всему'); }
+    else { const v = CPS * 3600; addK(v); toast('Все константы собраны. Бонус: +' + fmt(v)); }
+  }
+  updateUI(true);
+}
+
+function grantMath() {
+  const left = MATHS.filter(m => !S.maths[m.id]);
+  if (left.length) { const m = left[Math.floor(Math.random() * left.length)]; S.maths[m.id] = 1; recalc(); recompute(); toast('В совет вступил: ' + m.n + '. ' + m.e); }
+  else { const v = CPS * 1800; addK(v); toast('Весь совет в сборе. Бонус: +' + fmt(v)); }
+}
+
+/* ---------- вопрос ---------- */
+function showQuiz() {
+  const q = QZ[Math.floor(Math.random() * QZ.length)];
+  const opts = q[1].map((t, i) => ({ t, ok: i === 0 })).sort(() => Math.random() - 0.5);
+  const m = el('modal');
+  m.innerHTML = '<div class="mod"><h3>Задача от коллеги</h3><p></p><div class="opts"></div><div id="qexp" class="mut" style="margin-top:10px"></div><div id="qbtn"></div></div>';
+  m.querySelector('p').textContent = q[0];
+  const box = m.querySelector('.opts');
+  let done = false;
+  opts.forEach(o => {
+    const b = document.createElement('button'); b.className = 'opt'; b.textContent = o.t;
+    b.onclick = () => {
+      if (done) return; done = true; S.quizAll++;
+      box.querySelectorAll('.opt').forEach((x, k) => { if (opts[k].ok) x.classList.add('ok'); });
+      let msg;
+      if (o.ok) { S.quizOk++; b.classList.add('ok'); const d = evDur(); addBuff('quiz', 'Ясный ум ×3', 60 * d, { prod: 3 }); addK(CPS * 120 * d); msg = 'Верно! Производство ×3 на ' + Math.round(60 * d) + ' с и бонус знания. '; }
+      else { b.classList.add('bad'); msg = 'Не совсем. '; }
+      el('qexp').textContent = msg + q[2];
+      const c = document.createElement('button'); c.className = 'btn pri'; c.textContent = 'Дальше'; c.onclick = closeModal; el('qbtn').appendChild(c);
+      updateUI(true);
+    };
+    box.appendChild(b);
+  });
+  m.classList.remove('hide');
+}
+
+/* ---------- исследования ---------- */
+function startRes(id) {
+  const r = RES.find(x => x.id === id);
+  if (!r || S.resActive || S.res[id] || S.k < r.cost) return;
+  S.k -= r.cost; const ms = r.time * 1000 * Math.pow(0.8, parUp('rspeed')) * E.rsp;
+  S.resActive = { id, start: NOW(), end: NOW() + ms }; toast('Исследование начато: ' + r.name); updateUI(true);
+}
+function checkRes() {
+  const a = S.resActive; if (!a || NOW() < a.end) return;
+  S.res[a.id] = 1; S.resActive = null; recalc(); recompute();
+  const r = RES.find(x => x.id === a.id); toast('Решено: ' + r.name + '! ' + r.rew);
+  if (RES.every(x => S.res[x.id])) modal('<h3>Все семь решены</h3><p>Вы прошли путь от цифр до топосов и закрыли все проблемы тысячелетия. Но математика бесконечна: впереди ещё множество аксиом, парадигм и константа Ω.</p>', [{ t: 'Продолжить', cls: 'pri' }]);
+}
+
+/* ---------- достижения ---------- */
+const ACH = [];
+function A(id, name, desc, fn) { ACH.push({ id, name, desc, fn }); }
+[[1e3, 'Разминка'], [1e6, 'Школьная олимпиада'], [1e9, 'Кандидатская'], [1e12, 'Докторская'], [1e18, 'Филдсовская медаль'], [1e24, 'Академик'],
+ [1e36, 'Вселенная в уравнении'], [1e50, 'Выше любой теоремы'], [1e80, 'Столько же, сколько атомов во Вселенной'], [1e100, 'Гугол'], [1e150, 'За гранью гугола']]
+  .forEach(a => A('tot' + a[0], a[1], 'Накопите всего ' + fmt(a[0]) + ' знания', () => S.total >= a[0]));
+GEN.forEach((g, i) => A('gen' + i, 'Знакомство: ' + g.name, 'Купите «' + g.name + '»', () => S.g[i] >= 1));
+[[25, 'Четверть сотни'], [100, 'Сотня'], [250, 'Четверть тысячи'], [500, 'Полтысячи']].forEach(a => A('cnt' + a[0], a[1], 'Имейте ' + a[0] + ' единиц одного генератора', () => S.g.some(x => x >= a[0])));
+[[100, 'Тренировка руки'], [1000, 'Мозоль на пальце'], [10000, 'Нервный тик'], [100000, 'Метроном']].forEach(a => A('clk' + a[0], a[1], 'Нажмите кнопку ' + fmt(a[0]) + ' раз', () => S.clicks >= a[0]));
+[[1, 'Аксиоматик'], [5, 'Формалист'], [25, 'Бурбаки'], [100, 'Гильберт']].forEach(a => A('ax' + a[0], a[1], 'Аксиоматизируйте ' + a[0] + ' раз', () => S.axResets >= a[0]));
+[[1, 'Смена парадигмы'], [3, 'Революционер'], [10, 'Структуралист'], [25, 'Куновец']].forEach(a => A('par' + a[0], a[1], 'Смените парадигму ' + a[0] + ' раз', () => S.parResets >= a[0]));
+[[1, 'Озарило!'], [25, 'Ловец идей'], [100, 'Охотник за π'], [500, 'Эврика!']].forEach(a => A('ev' + a[0], a[1], 'Поймайте ' + a[0] + ' озарений', () => S.caught >= a[0]));
+[[1, 'Правильный ответ'], [10, 'Отличник'], [50, 'Профессор']].forEach(a => A('qz' + a[0], a[1], 'Ответьте верно на ' + a[0] + ' задач', () => S.quizOk >= a[0]));
+[[1, 'Коллекционер'], [6, 'Половина набора'], [12, 'Все константы']].forEach(a => A('cst' + a[0], a[1], 'Соберите констант: ' + a[0], () => CC >= a[0]));
+[[1, 'Первая проблема'], [4, 'Четыре из семи'], [7, 'Клэй доволен']].forEach(a => A('rs' + a[0], a[1], 'Решите проблем тысячелетия: ' + a[0], () => Object.keys(S.res).length >= a[0]));
+[[3600, 'Час в мире идей'], [86400, 'Сутки у доски'], [604800, 'Неделя без сна']].forEach(a => A('tm' + a[0], a[1], 'Проведите в игре ' + fmtT(a[0]), () => S.playTime >= a[0]));
+A('choice10', 'Выбор сделан', 'Аксиома выбора уровня 10', () => axUp('choice') >= 10);
+[[1, 'Первое поручение'], [10, 'Исполнительный'], [50, 'Трудоголик']].forEach(a => A('q' + a[0], a[1], 'Выполните заданий: ' + a[0], () => S.questsDone >= a[0]));
+[[1, 'Первый коллега'], [8, 'Научная группа'], [16, 'Кафедра'], [23, 'Академия']].forEach(a => A('m' + a[0], a[1], 'Соберите математиков в совете: ' + a[0], () => Object.keys(S.maths).length >= a[0]));
+[[1, 'Новая вселенная'], [3, 'Странник по мирам']].forEach(a => A('u' + a[0], a[1], 'Перейдите во вселенную раз: ' + a[0], () => S.uniResets >= a[0]));
+function checkAch() {
+  let n = 0;
+  for (const a of ACH) if (!S.ach[a.id] && a.fn()) { S.ach[a.id] = 1; n++; toast('Достижение: ' + a.name); }
+  if (n) { recompute(); if (TAB === 'goals') renderAch(); }
+}
+
+/* =====================================================================
+   ЦИКЛ
+   ===================================================================== */
+let autoAxT = 0, autoT = 0, achT = 0, saveT = 0, lastT = NOW(), uiT = 0;
+function tick(dt) {
+  recompute();
+  let gain = CPS * dt;
+  const ac = axUp('empty'); if (ac) gain += clickVal() * ac * dt;
+  addK(gain); S.playTime += dt;
+  if (S.buffs.length) { let ch = false; S.buffs.forEach(b => b.left -= dt); const n = S.buffs.length; S.buffs = S.buffs.filter(b => b.left > 0); if (S.buffs.length !== n) ch = true; if (ch) recompute(); }
+  if ((autoT += dt) >= 0.5) { autoT = 0; autoBuy(); }
+  if ((achT += dt) >= 1) { achT = 0; checkAch(); checkRes(); }
+  if ((saveT += dt) >= 20) { saveT = 0; save(); }
+  if (S.set.autoAx && uniUp('uauto') && (autoAxT += dt) >= 1) { autoAxT = 0; const ag = axiomGain(); if (ag >= 1 && ag >= Math.ceil(S.axT * 0.35)) doAxiom(true); }
+  if (orbLeft > 0) { if ((orbLeft -= dt) <= 0) { orbType = null; hideOrb(); } }
+  else if ((evT -= dt) <= 0) { if (modalOpen()) evT = 6; else spawnOrb(); }
+}
+function autoBuy() {
+  const lv = [parUp('auto1'), parUp('auto2'), parUp('auto3')];
+  if (lv[0] || lv[1] || lv[2]) {
+    for (let i = NG - 1; i >= 0; i--) {
+      const tier = i < 6 ? 0 : i < 12 ? 1 : 2; if (!lv[tier]) continue;
+      const q = maxAff(i, S.k * 0.3); if (q >= 1) buyQty(i, q);
+    }
+    recompute();
+  }
+  if (parUp('autoU')) { let b = false; for (const u of UPG) if (!S.upg[u.id] && upgVisible(u) && u.cost <= S.k * 0.5) { S.k -= u.cost; S.upg[u.id] = 1; b = true; } if (b) { recalc(); recompute(); } }
+}
+const offCap = () => (4 + 2 * axUp('reg') + 4 * parUp('lazy')) * 3600;
+const offEff = () => 0.5 + 0.1 * parUp('lazy') + E.roff;
+function offline(sec) {
+  recompute(); const use = Math.min(sec, offCap()), gain = CPS * use * offEff();
+  addK(gain); S.playTime += sec; S.buffs.forEach(b => b.left -= sec); S.buffs = S.buffs.filter(b => b.left > 0);
+  recompute(); return gain;
+}
+function loop() {
+  const t = NOW(); let dt = (t - lastT) / 1000; lastT = t; if (dt <= 0) return;
+  try {
+    if (dt > 5) { const g = offline(dt); if (dt > 90) modal('<h3>С возвращением!</h3><p>Вас не было ' + fmtT(dt) + '. За это время накоплено <b>' + fmt(g) + '</b> знания.</p>', [{ t: 'Отлично', cls: 'pri' }]); checkRes(); }
+    else tick(dt);
+    if ((uiT += dt) >= 0.2 || dt > 5) { uiT = 0; updateUI(); }
+  } catch (e) { console.error(e); }
+}
+
+/* =====================================================================
+   СОХРАНЕНИЕ
+   ===================================================================== */
+let mem = null;
+function save() { S.last = Date.now(); const s = JSON.stringify(S); try { localStorage.setItem(KEY, s); } catch (e) { mem = s; } }
+function load(raw) {
+  if (raw === undefined) { try { raw = localStorage.getItem(KEY); } catch (e) { raw = mem; } }
+  if (!raw) return false;
+  try {
+    const o = JSON.parse(raw), n = newState(); S = Object.assign(n, o);
+    S.set = Object.assign({ sci: false, vib: true, autoAx: false }, o.set);
+    if (!Array.isArray(S.g)) S.g = n.g; while (S.g.length < NG) S.g.push(0);
+    ['k', 'total', 'run', 'ax', 'axT', 'par', 'parT'].forEach(f => { S[f] = +S[f] || 0; });
+    S.buyMode = String(S.buyMode || '1'); return true;
+  } catch (e) { return false; }
+}
+function exportSave() { save(); return btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }
+function importSave(txt) {
+  try { const raw = decodeURIComponent(escape(atob(txt.trim()))); if (!load(raw)) throw 0; recalc(); recompute(); save(); location.reload(); }
+  catch (e) { toast('Не удалось прочитать код сохранения'); }
+}
+
+/* =====================================================================
+   ИНТЕРФЕЙС
+   ===================================================================== */
+let TAB = 'theory'; const SUB = { grow: 'ax', goals: 'ach' };
+function vib(ms) { if (S.set.vib && navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) { } } }
+function modalOpen() { return !el('modal').classList.contains('hide'); }
+function closeModal() { el('modal').classList.add('hide'); el('modal').innerHTML = ''; }
+function modal(html, btns) {
+  const m = el('modal'); m.innerHTML = '<div class="mod">' + html + '<div class="mb"></div></div>';
+  const box = m.querySelector('.mb');
+  btns.forEach(b => { const x = document.createElement('button'); x.className = 'btn ' + (b.cls || ''); x.textContent = b.t; x.onclick = () => { closeModal(); if (b.f) b.f(); }; box.appendChild(x); });
+  m.classList.remove('hide');
+}
+function toast(t) {
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; const b = el('toasts'); b.appendChild(d);
+  setTimeout(() => d.remove(), 3400); if (b.children && b.children.length > 3) b.children[0].remove();
+}
+function floatTxt(x, y, t) { const d = document.createElement('div'); d.className = 'fl'; d.textContent = t; d.style.left = x + 'px'; d.style.top = y + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 900); }
+
+/* ---------- теория ---------- */
+const GR = [];
+function buildGens() {
+  const box = el('gens'); box.innerHTML = '';
+  GEN.forEach((g, i) => {
+    const d = document.createElement('div'); d.className = 'gen hide';
+    d.innerHTML = '<div class="gsym"></div><div><div class="gname"><span class="gn"></span><span class="gcnt"></span></div><div class="gdesc"></div><div class="gstat"></div></div><button class="buy"><span class="bq"></span><span class="cost"></span></button><div class="gbar"></div>';
+    const q = s => d.querySelector(s);
+    GR.push({ d, sym: q('.gsym'), gn: q('.gn'), cnt: q('.gcnt'), desc: q('.gdesc'), stat: q('.gstat'), btn: q('.buy'), bq: q('.bq'), cost: q('.cost'), bar: q('.gbar') });
+    q('.buy').onclick = () => { if (buyGen(i)) { vib(10); updateUI(true); } };
+    box.appendChild(d);
+  });
+}
+function revealed(i) { return i === 0 || S.g[i] > 0 || S.g[i - 1] > 0 || S.run >= GEN[i].cost * 0.5; }
+function updTheory() {
+  let last = 0; for (let i = 0; i < NG; i++) if (revealed(i)) last = i;
+  const mode = S.buyMode;
+  for (let i = 0; i < NG; i++) {
+    const r = GR[i], g = GEN[i], n = S.g[i];
+    const show = i <= Math.min(last + 1, NG - 1), locked = !revealed(i);
+    r.d.classList.toggle('hide', !show); if (!show) continue;
+    r.d.classList.toggle('lock', locked);
+    r.sym.textContent = locked ? '?' : g.sym; r.sym.classList.toggle('long', !locked && g.sym.length > 2);
+    r.gn.textContent = locked ? 'Скрыто' : g.name; r.cnt.textContent = n ? '×' + fmt(n) : '';
+    r.desc.textContent = locked ? 'Накопите больше знания, чтобы открыть.' : g.desc;
+    let q = mode === 'max' ? maxAff(i) : parseInt(mode, 10), shown = q;
+    if (mode === 'max' && q < 1) shown = 1;
+    const c = costFor(i, shown), can = !locked && q >= 1 && S.k >= c;
+    r.bq.textContent = 'Купить ×' + fmt(shown); r.cost.textContent = fmt(c);
+    r.btn.classList.toggle('can', can);
+    if (!locked) {
+      const u = unit(i) * GM;
+      let nxt = 0; for (const t of MS) if (n < t) { nxt = t; break; }
+      let prev = 0; for (const t of MS) if (n >= t) prev = t;
+      r.stat.textContent = n ? fmt(u) + ' / с каждый' + (nxt ? ' · до ×' + msF().toFixed(msF() % 1 ? 1 : 0) + ': ' + (nxt - n) : '') : '+' + fmt(u) + ' / с за единицу';
+      r.bar.style.width = nxt ? Math.round(100 * (n - prev) / (nxt - prev)) + '%' : '100%';
+    } else { r.stat.textContent = ''; r.bar.style.width = '0'; }
+  }
+  const pg = el('pg'); let top = 0; for (let i = 0; i < NG; i++) if (S.g[i] > 0) top = i;
+  const sym = GEN[top].sym; if (pg.textContent !== sym) pg.textContent = sym; pg.classList.toggle('long', sym.length > 2);
+  const h = el('hint');
+  if (TO === 0 && S.total < 15) { h.classList.remove('hide'); h.textContent = 'Нажимайте большую кнопку, чтобы доказывать теоремы. Накопите 15 знания и купите «Цифры» — дальше они будут работать сами.'; }
+  else if (S.total < 300 && S.axResets === 0) { h.classList.remove('hide'); h.textContent = 'Покупайте генераторы: чем выше ступень, тем больше она даёт. Каждые 10, 25, 50… единиц удваивают её доход.'; }
+  else h.classList.add('hide');
+}
+
+/* ---------- улучшения ---------- */
+let upgSig = '';
+function renderUpgs(force) {
+  const list = UPG.filter(u => !S.upg[u.id] && upgVisible(u)).sort((a, b) => a.cost - b.cost), shown = list.slice(0, 14);
+  const sig = shown.map(u => u.id).join(',') + '|' + list.length;
+  el('upgInfo').textContent = 'Куплено: ' + Object.keys(S.upg).length + ' из ' + UPG.length + '. Улучшения сбрасываются при аксиоматизации.';
+  if (!force && sig === upgSig) { updUpgCan(); return; }
+  upgSig = sig; const box = el('upgList'); box.innerHTML = '';
+  if (!shown.length) box.innerHTML = '<div class="card mut">Пока нет доступных улучшений. Покупайте генераторы — новые откроются сами.</div>';
+  shown.forEach(u => {
+    const d = document.createElement('div'); d.className = 'card up'; d._u = u;
+    d.innerHTML = '<div class="ut"><b></b><div class="mut"></div><div class="pv" style="color:var(--ac);font-size:12.5px;margin-top:3px"></div></div><button class="buy"><span>Купить</span><span class="cost"></span></button>';
+    d.querySelector('b').textContent = u.name; d.querySelector('.mut').textContent = u.desc; d.querySelector('.cost').textContent = fmt(u.cost);
+    d.querySelector('button').onclick = () => { if (buyUpg(u.id)) { vib(10); renderUpgs(true); updateUI(true); } };
+    box.appendChild(d);
+  });
+  if (list.length > shown.length) { const n = document.createElement('div'); n.className = 'mut'; n.style.textAlign = 'center'; n.textContent = 'и ещё ' + (list.length - shown.length) + ' позже'; box.appendChild(n); }
+  updUpgCan();
+}
+function upgPreview(u) {
+  const c0 = CPS, k0 = clickVal();
+  S.upg[u.id] = 1; recalc(); recompute(); const c1 = CPS, k1 = clickVal();
+  delete S.upg[u.id]; recalc(); recompute();
+  const parts = [];
+  if (c1 > c0 * 1.0000001) parts.push('Доход: ' + fmt(c0) + ' → ' + fmt(c1) + ' / с');
+  if (k1 > k0 * 1.0000001) parts.push('Клик: ' + fmt(k0) + ' → ' + fmt(k1));
+  return parts.join(' · ') || 'Эффект проявится позже';
+}
+function updUpgCan() { const ch = el('upgList').children; for (let i = 0; i < ch.length; i++) { const d = ch[i]; if (d._u) { d.querySelector('.buy').classList.toggle('can', S.k >= d._u.cost); d.querySelector('.pv').textContent = upgPreview(d._u); } } }
+function upgAffordable() { return UPG.some(u => !S.upg[u.id] && upgVisible(u) && S.k >= u.cost); }
+
+/* ---------- магазины ---------- */
+const SHOPS = { ax: [], par: [], uni: [] };
+function makeShop(box, defs, kind) {
+  defs.forEach(def => {
+    const d = document.createElement('div'); d.className = 'card shop';
+    d.innerHTML = '<div class="st"><b></b><span class="lv"></span></div><div class="mut dd"></div><div class="eff"></div><button class="buy"><span class="bl"></span><span class="cost"></span></button>';
+    const q = s => d.querySelector(s);
+    const bal = () => kind === 'ax' ? S.ax : kind === 'par' ? S.par : S.uni, ups = () => kind === 'ax' ? S.axUp : kind === 'par' ? S.parUp : S.uniUp;
+    q('b').textContent = def.name; q('.dd').textContent = def.d;
+    q('.buy').onclick = () => {
+      const L = ups()[def.id] || 0; if (L >= def.max) return; const c = def.cost(L); if (bal() < c) return;
+      if (kind === 'ax') S.ax -= c; else if (kind === 'par') S.par -= c; else S.uni -= c; ups()[def.id] = L + 1; recalc(); recompute(); vib(10); updateUI(true);
+    };
+    box.appendChild(d);
+    SHOPS[kind].push(() => {
+      const L = ups()[def.id] || 0, maxed = L >= def.max;
+      q('.lv').textContent = def.max > 1 ? L + ' / ' + def.max : (L ? 'куплено' : '');
+      q('.eff').textContent = def.max === 1 ? def.eff(1) : maxed ? def.eff(L) + ' (максимум)' : def.eff(L) + '  →  ' + def.eff(L + 1);
+      const c = maxed ? 0 : def.cost(L);
+      q('.bl').textContent = maxed ? 'Максимум' : 'Купить'; q('.cost').textContent = maxed ? '' : fmt(c) + (kind === 'ax' ? ' ак.' : kind === 'par' ? ' пар.' : ' вс.');
+      q('.buy').classList.toggle('can', !maxed && bal() >= c);
+    });
+  });
+}
+function buildGrow() {
+  el('axPane').innerHTML = '<div class="card"><div class="mut">Аксиомы</div><div class="big2" id="axBal">0</div><div class="mut" id="axBonus"></div></div>' +
+    '<div class="card"><div class="h">Аксиоматизация</div><div class="mut">Сбросьте знание, генераторы и улучшения — взамен получите аксиомы. Каждая навсегда даёт +4% ко всему и открывает усиления ниже.</div><div id="axGain" style="margin-top:8px;font-weight:600"></div><button class="btn pri" id="axBtn">Аксиоматизировать</button></div><div id="axShop"></div>';
+  makeShop(el('axShop'), AXU, 'ax');
+  el('axBtn').onclick = () => { const g = axiomGain(); if (g < 1) return; modal('<h3>Аксиоматизация</h3><p>Вы получите <b>' + fmt(g) + '</b> аксиом. Знание, генераторы и улучшения обнулятся.</p>', [{ t: 'Отмена' }, { t: 'Аксиоматизировать', cls: 'pri', f: doAxiom }]); };
+  el('parPane').innerHTML = '<div class="card"><div class="mut">Парадигмы</div><div class="big2" id="parBal">0</div><div class="mut" id="parBonus"></div></div>' +
+    '<div class="card"><div class="h">Парадигмальный сдвиг</div><div class="mut" id="parInfo"></div><div id="parGain" style="margin-top:8px;font-weight:600"></div><button class="btn pri" id="parBtn">Сменить парадигму</button></div><div id="parShop"></div>';
+  makeShop(el('parShop'), PARU, 'par');
+  el('parBtn').onclick = () => { const g = parGain(); if (g < 1) return; modal('<h3>Парадигмальный сдвиг</h3><p>Вы получите <b>' + g + '</b> парадигм. Обнулятся знание, генераторы, улучшения, <b>аксиомы и их усиления</b>. Останутся достижения, константы, проблемы тысячелетия и усиления парадигм.</p>', [{ t: 'Отмена' }, { t: 'Сменить', cls: 'pri', f: doParadigm }]); };
+}
+function buildUni() {
+  el('uniPane').innerHTML = '<div class="card"><div class="mut">Вселенные</div><div class="big2" id="uniBal">0</div><div class="mut" id="uniBonus"></div></div>' +
+    '<div class="card"><div class="h">Переход в новую вселенную</div><div class="mut" id="uniInfo"></div><div id="uniGain" style="margin-top:8px;font-weight:600"></div><button class="btn pri" id="uniBtn">Перейти</button></div><div id="uniShop"></div>';
+  makeShop(el('uniShop'), UNIU, 'uni');
+  el('uniBtn').onclick = () => { const g = uniGain(); if (g < 1) return; modal('<h3>Новая вселенная</h3><p>Вы получите <b>' + g + '</b> вселенных. Обнулятся всё, включая <b>парадигмы и их усиления</b>. Останутся достижения, константы, проблемы тысячелетия, совет математиков, задания и усиления вселенных.</p>', [{ t: 'Отмена' }, { t: 'Перейти', cls: 'pri', f: doUniverse }]); };
+}
+function updGrow() {
+  if (SUB.grow === 'ax') {
+    el('axBal').textContent = fmt(S.ax); el('axBonus').textContent = 'Всего получено ' + fmt(S.axT) + ' → +' + fmt(4 * S.axT) + '% к производству';
+    const g = axiomGain();
+    el('axGain').textContent = g >= 1 ? 'Сейчас можно получить: +' + fmt(g) + ' аксиом' : 'Нужно накопить за забег ' + fmt(AX_MIN) + ' знания (сейчас ' + fmt(S.run) + ')';
+    el('axBtn').classList.toggle('dis', g < 1);
+    SHOPS.ax.forEach(f => f());
+  } else if (SUB.grow === 'uni') {
+    el('uniBal').textContent = fmt(S.uni); el('uniBonus').textContent = 'Всего получено ' + fmt(S.uniT) + ' → ×' + fmt(1 + 1.5 * S.uniT) + ' к производству';
+    const g = uniGain();
+    el('uniInfo').textContent = 'Нужно ' + UNI_MIN + ' парадигм, полученных в этой вселенной (сейчас ' + fmt(S.parT) + '). Сбрасывает даже парадигмы — зато даёт самые мощные бонусы.';
+    el('uniGain').textContent = g >= 1 ? 'Сейчас можно получить: +' + g + ' вселенных' : 'Пока недоступно';
+    el('uniBtn').classList.toggle('dis', g < 1);
+    SHOPS.uni.forEach(f => f());
+  } else {
+    el('parBal').textContent = fmt(S.par); el('parBonus').textContent = 'Всего получено ' + fmt(S.parT) + ' → ×' + fmt(1 + 0.5 * S.parT) + ' к производству';
+    const g = parGain();
+    el('parInfo').textContent = 'Нужно ' + PAR_MIN + ' аксиом, полученных за эту парадигму (сейчас ' + fmt(S.axT) + '). Это самый глубокий сброс — но и самый мощный бонус.';
+    el('parGain').textContent = g >= 1 ? 'Сейчас можно получить: +' + g + ' парадигм' : 'Пока недоступно';
+    el('parBtn').classList.toggle('dis', g < 1);
+    SHOPS.par.forEach(f => f());
+  }
+}
+
+/* ---------- цели ---------- */
+function buildAch() {
+  const box = el('achPane'); box.innerHTML = '<div class="card"><b id="achHead"></b><div class="mut">Каждое достижение даёт +2% ко всему производству.</div></div><div id="achList"></div>';
+  const l = el('achList');
+  ACH.forEach(a => {
+    const d = document.createElement('div'); d.className = 'card ach'; d.dataset.id = a.id;
+    d.innerHTML = '<div class="ai">✓</div><div><b></b><div class="mut"></div></div>'; d.querySelector('b').textContent = a.name; d.querySelector('.mut').textContent = a.desc; l.appendChild(d);
+  });
+}
+function renderAch() {
+  el('achHead').textContent = 'Открыто ' + AC + ' из ' + ACH.length + ' · бонус +' + Math.round(AC * 2 * (axUp('zorn') ? 2 : 1)) + '%';
+  const ch = el('achList').children; for (let i = 0; i < ch.length; i++) ch[i].classList.toggle('got', !!S.ach[ACH[i].id]);
+}
+const QT = {
+  click: { txt: t => 'Нажмите кнопку «доказать» ' + fmt(t) + ' раз', val: () => S.clicks, tgt: n => Math.ceil(40 * (1 + n * 0.15) / 5) * 5 },
+  catch: { txt: t => 'Поймайте озарений: ' + t, val: () => S.caught, tgt: n => Math.min(6, 1 + Math.floor(n / 5)) },
+  buys: { txt: t => 'Купите генераторов (штук): ' + fmt(t), val: () => S.buys, tgt: n => Math.ceil(15 * (1 + n * 0.15)) },
+  ups: { txt: t => 'Купите улучшений: ' + t, val: () => S.upBuys, tgt: n => Math.min(10, 3 + Math.floor(n / 4)) },
+  earn: { txt: t => 'Накопите знания: ' + fmt(t), val: () => S.total, tgt: () => Math.max(300, CPS * 600 + clickVal() * 40) },
+  quiz: { txt: t => 'Ответьте верно на задач: ' + t, val: () => S.quizOk, tgt: n => Math.min(4, 1 + Math.floor(n / 8)) }
+};
+function newQuest() {
+  const used = S.quests.map(q => q.type), types = Object.keys(QT).filter(t => !used.includes(t)), t = types[Math.floor(Math.random() * types.length)], d = QT[t];
+  return { type: t, base: d.val(), target: d.tgt(S.questsDone), r: +(0.8 + Math.random() * 0.5).toFixed(2) };
+}
+const qReward = q => Math.max(CPS * 900 * q.r, 200 * (1 + S.questsDone * 0.2));
+const questProg = q => Math.max(0, QT[q.type].val() - q.base);
+const questDone = q => questProg(q) >= q.target;
+function claimQuest(i) {
+  const q = S.quests[i]; if (!q || !questDone(q)) return;
+  const v = qReward(q); addK(v); S.questsDone++; S.quests.splice(i, 1); S.quests.push(newQuest()); recompute();
+  toast('Задание выполнено: +' + fmt(v) + ' знания'); if (S.questsDone % 5 === 0) grantMath(); vib(15); updateUI(true);
+}
+let QR = [];
+function buildQuests() {
+  const b = el('questPane'); b.innerHTML = '<div class="card"><b id="qHead"></b><div class="mut">Награда растёт вместе с вашим доходом. Каждое выполненное задание даёт +1% ко всему (до +200%), а каждое пятое приводит в совет нового математика.</div></div>';
+  for (let i = 0; i < 3; i++) {
+    const d = document.createElement('div'); d.className = 'card';
+    d.innerHTML = '<b class="qt"></b><div class="mut qp"></div><div class="bar"><i></i></div><div class="qr" style="color:var(--ac);font-size:13px;margin-top:6px"></div><button class="btn"></button>';
+    d.querySelector('button').onclick = () => claimQuest(i); b.appendChild(d);
+    QR.push({ t: d.querySelector('.qt'), p: d.querySelector('.qp'), bar: d.querySelector('.bar i'), r: d.querySelector('.qr'), b: d.querySelector('button') });
+  }
+}
+function updQuests() {
+  el('qHead').textContent = 'Выполнено заданий: ' + S.questsDone + ' · бонус +' + Math.min(S.questsDone, 200) + '%';
+  QR.forEach((r, i) => {
+    const q = S.quests[i]; if (!q) return; const d = QT[q.type], cur = Math.min(q.target, questProg(q)), ok = cur >= q.target;
+    r.t.textContent = d.txt(q.target); r.p.textContent = fmt(cur) + ' / ' + fmt(q.target); r.bar.style.width = Math.min(100, 100 * cur / q.target) + '%';
+    r.r.textContent = 'Награда: ' + fmt(qReward(q)) + ' знания' + ((S.questsDone + 1) % 5 === 0 ? ' + математик' : '');
+    r.b.textContent = ok ? 'Забрать' : 'В процессе'; r.b.classList.toggle('pri', ok); r.b.classList.toggle('dis', !ok);
+  });
+}
+let MR = [];
+function buildMaths() {
+  const b = el('mathPane'); b.innerHTML = '<div class="card"><b id="mHead"></b><div class="mut">Учёные вступают в совет, когда вы ловите озарения Ψ, и за каждое пятое задание. Бонусы действуют навсегда, даже после любых сбросов.</div></div><div id="mList"></div>';
+  MATHS.forEach(m => {
+    const d = document.createElement('div'); d.className = 'card mc';
+    d.innerHTML = '<div class="mi"></div><div><b></b><div class="mut ms"></div><div class="me"></div></div>'; b.querySelector('#mList').appendChild(d);
+    MR.push({ d, i: d.querySelector('.mi'), n: d.querySelector('b'), s: d.querySelector('.ms'), e: d.querySelector('.me') });
+  });
+}
+function updMaths() {
+  el('mHead').textContent = 'В совете: ' + Object.keys(S.maths).length + ' из ' + MATHS.length;
+  const order = MATHS.map((m, k) => k).sort((a, b) => (!!S.maths[MATHS[b].id] - !!S.maths[MATHS[a].id]) || a - b), sig = order.join(',');
+  if (sig !== updMaths.sig) { updMaths.sig = sig; const l = el('mList'); order.forEach(k => l.appendChild(MR[k].d)); }
+  MATHS.forEach((m, k) => {
+    const r = MR[k], got = !!S.maths[m.id]; r.d.classList.toggle('got', got);
+    r.i.textContent = got ? m.n.split(' ').pop()[0] : '?'; r.n.textContent = got ? m.n + ' · ' + m.y : 'Неизвестный учёный';
+    r.s.textContent = got ? m.s : 'Ловите озарения Ψ.'; r.e.textContent = got ? m.e : '';
+  });
+}
+function encyclopedia() {
+  let h = '<h3>Энциклопедия</h3>';
+  for (let i = 0; i <= Math.min(S.maxGen, NG - 1); i++) h += '<p><b>' + GEN[i].name + '.</b> ' + FACTS[i] + '</p>';
+  if (S.maxGen < NG - 1) h += '<p class="mut">Новые записи откроются по мере продвижения.</p>';
+  modal(h, [{ t: 'Закрыть' }]);
+}
+let resEls = {};
+function buildRes() {
+  const box = el('resPane'); box.innerHTML = '<div id="resLock" class="card mut">Откройте «Институт Клэя» в разделе «Парадигмы», чтобы начать исследования.</div><div id="resList"></div>';
+  RES.forEach(r => {
+    const d = document.createElement('div'); d.className = 'card res';
+    d.innerHTML = '<h4></h4><div class="mut fl1"></div><div class="rw" style="color:var(--ac);font-size:13px;margin:4px 0"></div><div class="mut tm"></div><div class="bar"><i></i></div><button class="btn"></button>';
+    d.querySelector('h4').textContent = r.name; d.querySelector('.fl1').textContent = r.flavor; d.querySelector('.rw').textContent = 'Награда: ' + r.rew;
+    const b = d.querySelector('button'); b.onclick = () => startRes(r.id);
+    el('resList').appendChild(d); resEls[r.id] = { d, b, tm: d.querySelector('.tm'), bar: d.querySelector('.bar i') };
+  });
+}
+function resUnlocked() { return parUp('unlockRes') > 0 || Object.keys(S.res).length > 0; }
+function updRes() {
+  const un = resUnlocked(); el('resLock').classList.toggle('hide', un); el('resList').classList.toggle('hide', !un); if (!un) return;
+  RES.forEach(r => {
+    const e = resEls[r.id], a = S.resActive;
+    const dur = r.time * Math.pow(0.8, parUp('rspeed')) * E.rsp;
+    if (S.res[r.id]) { e.tm.textContent = 'Решено'; e.bar.style.width = '100%'; e.b.textContent = 'Решено'; e.b.classList.add('dis'); e.b.classList.remove('pri'); }
+    else if (a && a.id === r.id) { const left = (a.end - NOW()) / 1000; e.tm.textContent = 'Осталось ' + fmtT(left); e.bar.style.width = Math.min(100, 100 * (1 - left / dur)) + '%'; e.b.textContent = 'Идёт исследование'; e.b.classList.add('dis'); }
+    else { e.tm.textContent = 'Длительность ' + fmtT(dur) + ' (идёт и оффлайн)'; e.bar.style.width = '0'; e.b.textContent = 'Начать за ' + fmt(r.cost) + ' знания'; const can = !a && S.k >= r.cost; e.b.classList.toggle('dis', !can); e.b.classList.toggle('pri', can); }
+  });
+}
+
+/* ---------- меню ---------- */
+let statEls = {};
+function buildMenu() {
+  const box = el('menuPane');
+  box.innerHTML = '<div class="card"><div class="h">Константы</div><div class="mut" style="margin-bottom:8px">Ловите озарения со знаком ✦. Каждая константа даёт +5% ко всему. Нажмите на найденную, чтобы прочитать о ней.</div><div class="grid" id="cgrid"></div></div>' +
+    '<div class="card"><div class="h">Статистика</div><div id="stats"></div></div>' +
+    '<div class="card"><div class="h">Настройки</div><div class="mut">Запись чисел</div><div class="tg" id="tgN"><button data-v="0">Сокращённая</button><button data-v="1">Научная</button></div>' +
+    '<div class="mut" style="margin-top:8px">Вибрация</div><div class="tg" id="tgV"><button data-v="1">Вкл</button><button data-v="0">Выкл</button></div>' +
+    '<div id="autoAxRow"><div class="mut" style="margin-top:8px">Автоаксиоматизация</div><div class="tg" id="tgA"><button data-v="1">Вкл</button><button data-v="0">Выкл</button></div></div></div>' +
+    '<div class="card"><div class="h">Знания</div><button class="btn" id="bEnc">Энциклопедия</button><div class="mut" style="margin-top:10px">Предел · версия 2.0</div></div>' +
+    '<div class="card"><div class="h">Сохранение</div><div class="mut">Игра сохраняется сама каждые 20 секунд.</div><button class="btn" id="bSave">Сохранить сейчас</button><button class="btn" id="bExp">Экспорт</button><button class="btn" id="bImp">Импорт</button><button class="btn" id="bHelp">Как играть</button><button class="btn" id="bReset" style="color:#ff8aa5">Стереть всё</button></div>';
+  const g = el('cgrid');
+  CONST.forEach((c, i) => { const d = document.createElement('button'); d.className = 'cc'; d.dataset.i = i; d.onclick = () => { if (S.consts[i]) toast(c[0] + ': ' + c[1]); else toast('Эта константа ещё не найдена.'); }; g.appendChild(d); });
+  ['Всего знания', 'Время в игре', 'Кликов', 'Озарений поймано', 'Задач решено верно', 'Аксиоматизаций', 'Смен парадигм', 'Вселенных пройдено', 'Заданий выполнено', 'Учёных в совете', 'Лучшая аксиоматизация'].forEach((n, i) => {
+    const r = document.createElement('div'); r.className = 'row'; r.innerHTML = '<span></span><span></span>'; r.children[0].textContent = n; el('stats').appendChild(r); statEls[i] = r.children[1];
+  });
+  el('tgN').onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (v === undefined) return; S.set.sci = v === '1'; updateUI(true); };
+  el('tgV').onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (v === undefined) return; S.set.vib = v === '1'; updateUI(true); };
+  el('tgA').onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (v === undefined) return; S.set.autoAx = v === '1'; updateUI(true); };
+  el('bEnc').onclick = encyclopedia;
+  el('bSave').onclick = () => { save(); toast('Сохранено'); };
+  el('bExp').onclick = () => { const code = exportSave(); modal('<h3>Экспорт</h3><p class="mut">Скопируйте код и сохраните где-нибудь.</p><textarea id="ta" readonly></textarea>', [{ t: 'Скопировать', cls: 'pri', f: () => { try { navigator.clipboard.writeText(code); toast('Скопировано'); } catch (e) { } } }, { t: 'Закрыть' }]); el('ta').value = code; };
+  el('bImp').onclick = () => { modal('<h3>Импорт</h3><p class="mut">Вставьте код сохранения. Текущий прогресс будет заменён.</p><textarea id="ta"></textarea>', [{ t: 'Отмена' }, { t: 'Загрузить', cls: 'pri', f: () => importSave(el('ta').value) }]); };
+  el('bHelp').onclick = help;
+  el('bReset').onclick = () => modal('<h3>Стереть всё?</h3><p>Весь прогресс будет удалён без возможности восстановления.</p>', [{ t: 'Отмена' }, { t: 'Стереть', cls: 'pri', f: () => { S = newState(); try { localStorage.removeItem(KEY); } catch (e) { mem = null; } location.reload(); } }]);
+}
+function updMenu() {
+  document.querySelectorAll('#cgrid .cc').forEach(b => { const i = +b.dataset.i, got = !!S.consts[i]; b.classList.toggle('got', got); b.textContent = got ? CONST[i][0] : '?'; });
+  const v = [fmt(S.total), fmtT(S.playTime), fmt(S.clicks), fmt(S.caught), S.quizOk + ' из ' + S.quizAll, S.axResets, S.parResets, S.uniResets, S.questsDone, Object.keys(S.maths).length + ' из ' + MATHS.length, fmt(axiomGain()) + ' (сейчас)'];
+  v.forEach((x, i) => { statEls[i].textContent = x; });
+  el('tgN').querySelectorAll('button').forEach(b => b.classList.toggle('on', (b.dataset.v === '1') === S.set.sci));
+  el('tgV').querySelectorAll('button').forEach(b => b.classList.toggle('on', (b.dataset.v === '1') === S.set.vib));
+  el('autoAxRow').classList.toggle('hide', !uniUp('uauto')); el('tgA').querySelectorAll('button').forEach(b => b.classList.toggle('on', (b.dataset.v === '1') === S.set.autoAx));
+}
+function help() {
+  modal('<h3>Как играть</h3><p><b>Σ Теория.</b> Нажимайте кнопку — это даёт знание. Покупайте ступени математики: от цифр до топосов. Каждая ступень приносит знание сама.</p><p><b>∂ Улучшения.</b> Разовые усиления. Сбрасываются при аксиоматизации.</p><p><b>∞ Рост.</b> Аксиоматизация — первый сброс: даёт аксиомы с постоянным бонусом. Парадигмальный сдвиг — второй, глубокий сброс с автоматизацией и мощными усилениями.</p><p><b>∀ Цели.</b> Достижения и семь проблем тысячелетия.</p><p><b>Озарения.</b> Светящиеся знаки случайно появляются на экране — нажмите, пока они не исчезли. Там бонусы, задачи и редкие константы.</p>', [{ t: 'Понятно', cls: 'pri' }]);
+}
+
+/* ---------- общий апдейт ---------- */
+let navDotT = 0;
+function updateUI(force) {
+  el('kVal').textContent = fmt(S.k);
+  el('cps').textContent = '+' + fmt(CPS) + ' / с';
+  const bf = el('buffs'); let bh = '';
+  S.buffs.forEach(b => { bh += '<span class="chip">' + b.name + ' · ' + Math.ceil(b.left) + ' с</span>'; });
+  if (S.resActive) { const r = RES.find(x => x.id === S.resActive.id); bh += '<span class="chip">' + r.name + ' · ' + fmtT((S.resActive.end - NOW()) / 1000) + '</span>'; }
+  if (bf.innerHTML !== bh) bf.innerHTML = bh;
+  // цель
+  const ag = axiomGain(); let g;
+  if (uniGain() >= 1) g = 'Доступен переход во вселенную: +' + uniGain() + ' (вкладка «Рост»)';
+  else if (parGain() >= 1) g = 'Доступен парадигмальный сдвиг: +' + parGain() + ' (вкладка «Рост»)';
+  else if (ag >= 1) g = 'Можно аксиоматизировать: +' + fmt(ag) + ' аксиом';
+  else g = 'До первой аксиомы за забег: ' + fmt(S.run) + ' / ' + fmt(AX_MIN);
+  if (S.axResets > 0 && ag >= 1) g += ' · следующая при ' + fmt(axNeed(ag + 1));
+  el('goal').textContent = g;
+  // тема
+  const h = Math.round(38 + S.maxGen * (285 / (NG - 1))); if (document.documentElement.dataset.h !== String(h)) { document.documentElement.dataset.h = h; document.documentElement.style.setProperty('--h', h); }
+  // вкладки
+  document.querySelectorAll('#buyseg button').forEach(b => b.classList.toggle('on', b.dataset.m === S.buyMode));
+  if (TAB === 'theory') updTheory();
+  else if (TAB === 'upg') renderUpgs(force);
+  else if (TAB === 'grow') updGrow();
+  else if (TAB === 'goals') { if (SUB.goals === 'res') updRes(); else if (SUB.goals === 'quest') updQuests(); else if (SUB.goals === 'math') updMaths(); else renderAch(); }
+  else if (TAB === 'menu') updMenu();
+  if ((navDotT += 0.2) >= 1 || force) {
+    navDotT = 0; const nb = document.querySelectorAll('#nav button');
+    nb.forEach(b => { const t = b.dataset.t; let d = false; if (t === 'grow') d = ag >= 1 && (S.axResets === 0 || ag >= 3 + S.axT * 0.2) || parGain() >= 1 || uniGain() >= 1; if (t === 'upg') d = upgAffordable(); if (t === 'goals') d = S.quests.some(questDone); b.classList.toggle('dot', d && TAB !== t); });
+  }
+}
+function setTab(t) {
+  TAB = t; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.id === 't-' + t));
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  el('view').scrollTop = 0; if (t === 'upg') upgSig = ''; if (t === 'goals') { renderAch(); updRes(); } updateUI(true);
+}
+const PANES = { grow: { ax: 'axPane', par: 'parPane', uni: 'uniPane' }, goals: { ach: 'achPane', res: 'resPane', quest: 'questPane', math: 'mathPane' } };
+function setSub(tab, v) {
+  SUB[tab] = v; el(tab + 'seg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.s === v));
+  for (const k in PANES[tab]) el(PANES[tab][k]).classList.toggle('hide', k !== v);
+  updateUI(true);
+}
+
+/* =====================================================================
+   ЗАПУСК
+   ===================================================================== */
+function dailyCheck(had) {
+  const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000), d = S.daily;
+  if (d.d === day) return '';
+  const streak = d.d === day - 1 ? d.streak + 1 : 1; S.daily = { d: day, streak };
+  if (!had) return '';
+  const v = Math.max(CPS * 1800 * Math.min(streak, 7), 150 * streak); addK(v); addBuff('daily', 'Бодрое утро ×2', 300, { prod: 2 });
+  return '<p><b>Ежедневный бонус, день ' + streak + ':</b> +' + fmt(v) + ' знания и ×2 к производству на 5 минут.</p>';
+}
+function init() {
+  const had = load(); recalc(); recompute();
+  buildGens(); buildGrow(); buildUni(); buildAch(); buildRes(); buildQuests(); buildMaths(); buildMenu();
+  while (S.quests.length < 3) S.quests.push(newQuest());
+  document.querySelectorAll('#nav button').forEach(b => b.onclick = () => setTab(b.dataset.t));
+  document.querySelectorAll('#buyseg button').forEach(b => b.onclick = () => { S.buyMode = b.dataset.m; updateUI(true); });
+  el('growseg').querySelectorAll('button').forEach(b => b.onclick = () => setSub('grow', b.dataset.s));
+  el("goalsseg").querySelectorAll('button').forEach(b => b.onclick = () => setSub('goals', b.dataset.s));
+  const pb = el('proof');
+  pb.addEventListener('pointerdown', e => {
+    e.preventDefault(); recompute(); const v = clickVal(); addK(v); S.clicks++; floatTxt(e.clientX, e.clientY - 20, '+' + fmt(v)); vib(6);
+    pb.classList.add('press'); setTimeout(() => pb.classList.remove('press'), 70); el('kVal').textContent = fmt(S.k);
+  });
+  pb.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const v = clickVal(); addK(v); S.clicks++; } });
+  el('orb').onclick = claimOrb;
+  try {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 512; const cx = cv.getContext('2d');
+    cx.fillStyle = '#0d1230'; cx.fillRect(0, 0, 512, 512);
+    const gr = cx.createRadialGradient(190, 170, 20, 256, 256, 220); gr.addColorStop(0, '#fbe3a6'); gr.addColorStop(.55, '#ee9d2f'); gr.addColorStop(1, '#5a3508');
+    cx.fillStyle = gr; cx.beginPath(); cx.arc(256, 256, 190, 0, 7); cx.fill();
+    cx.fillStyle = '#0c1129'; cx.font = '600 230px Georgia,serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('∞', 256, 262);
+    const icon = cv.toDataURL('image/png');
+    const man = { name: 'Предел', short_name: 'Предел', start_url: location.href, display: 'standalone', background_color: '#0d1230', theme_color: '#0d1230', icons: [{ src: icon, sizes: '512x512', type: 'image/png', purpose: 'any' }] };
+    const l = document.createElement('link'); l.rel = 'manifest'; l.href = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' })); document.head.appendChild(l);
+    const a = document.createElement('link'); a.rel = 'apple-touch-icon'; a.href = icon; document.head.appendChild(a);
+  } catch (e) { }
+  let away = 0;
+  if (had) { away = (Date.now() - S.last) / 1000; }
+  lastT = NOW(); evT = rnd(30, 60);
+  const parts = [];
+  if (away > 5) { const g = offline(away); if (away > 90) parts.push('<p>Вас не было ' + fmtT(away) + '. За это время накоплено <b>' + fmt(g) + '</b> знания.</p>'); }
+  const dl = dailyCheck(had); if (dl) parts.push(dl);
+  if (had && S.seenVer < 2) parts.push(CHANGELOG);
+  S.seenVer = 2;
+  if (parts.length) modal('<h3>С возвращением!</h3>' + parts.join(''), [{ t: 'Отлично', cls: 'pri' }]);
+  checkRes(); checkAch(); recompute(); setSub('grow', 'ax'); setSub('goals', 'ach'); setTab('theory');
+  setInterval(loop, 100);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+  window.addEventListener('pagehide', save);
+  if (!had) setTimeout(help, 400);
+}
+init();
+</script>
+</body>
+</html>
